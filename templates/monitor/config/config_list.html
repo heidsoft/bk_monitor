@@ -1,0 +1,1308 @@
+<%inherit file="/monitor/base_new.html"/>
+<%block name="css">
+	<link href="${STATIC_URL}alert/font/iconfont.css" rel="stylesheet">
+    <link href="${STATIC_URL}assets/datetimepicker/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="${STATIC_URL}assets/kendoui-2015.2.624/styles/kendo.common.min.css" />
+    <link rel="stylesheet" href="${STATIC_URL}assets/kendoui-2015.2.624/styles/kendo.default.min.css" />
+    <link rel="stylesheet" type="text/css" href="${STATIC_URL}alert/css/performanceV2/icheck/minimal/blue.css">
+    <link rel="stylesheet" type="text/css" href="${STATIC_URL}alert/css/performanceV2/style.css?v=2">
+    <link rel="stylesheet" type="text/css" href="${STATIC_URL}alert/css/configV2/configure.css">
+    <link rel="stylesheet" type="text/css" href="${STATIC_URL}alert/css/configV2/detail.css">
+    <link rel="stylesheet" type="text/css" href="${STATIC_URL}alert/css/dataview/monitor.css">
+    <link rel="stylesheet" type="text/css" href="${STATIC_URL}alert/css/configV2/shield.css">
+<style>
+/* 配置列表 start */
+.k-tooltip{background: rgb(153, 195, 25);opacity: 1;color: #fff;border: 2px solid #88C200;text-align: left;}
+.k-callout-s{border-top-color: rgb(153, 195, 25);}
+.k-widget.k-tooltip {
+    border-color: rgb(153, 195, 25);
+    background-color: rgb(153, 195, 25);
+    color: #fff
+}
+.k-grid-content {
+    min-height: 30px;
+}
+.k-header .k-link{
+   text-align: center;
+}
+th.k-header:last-child{
+    text-align: center;
+}
+.k-grid-header th.k-header{
+    text-align: center;
+}
+.grid-a{
+	color: #fff !important;
+	display: inline !important;
+}
+section .container-fluid{
+    margin-top: 15px;
+}
+#customSet{
+    margin-top: 0;
+    margin-left: 0;
+}
+.create-monitor-btn .king-btn{cursor: default;}
+.create-monitor-selector{display: none;position:absolute;z-index: 1000;}
+.create-monitor-selector a{margin-top:-1px;}
+.create-monitor:hover .create-monitor-selector{display: block;}
+.ellipsis-name{overflow: hidden;text-overflow: ellipsis;white-space: nowrap;display: inline-block;max-width: 150px; min-width: 150px}
+.ellipsis-data{overflow: hidden;text-overflow: ellipsis;white-space: nowrap;display: inline-block;max-width: 450px}
+.popover{max-width: 450px;}
+.table-header-cell{
+	border-color: #dbdbdb;
+    background-color: #fff;
+    color: #787878;
+}
+.table-td{
+	color: #787878;
+}
+##.required{
+##    margin-left: 4px;
+##	color: #f00;
+##}
+.error {
+    display: inline;
+    margin-top: 3px;
+    color: #b94a48;
+    display: inline-block;
+}
+.form-control{
+     width: 100%;
+}
+/* 配置列表 end */
+</style>
+</%block>
+
+<%block name="content">
+<div class="panel panel-default">
+    <input type="hidden" id="dimension_field">
+    <input type="hidden" id="s_id">
+    <div class="panel-body">
+        <!-- 选项卡 Start -->
+        <div class="tab-box" id="myTab2">
+            <ul class="nav nav-tabs king-nav-tabs">
+                <li class="active"><a id="performance_tab" href="#monitor_list" data-toggle="tab">主机监控</a>
+                </li>
+                <li><a id="custom_tab" href="#monitor_list" data-toggle="tab">自定义监控</a>
+                </li>
+                <li><a href="#shield_list" data-toggle="tab">告警屏蔽</a>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane in active" id="monitor_list">
+                    <div class = "panel table7_demo mb0">
+                        <div class = "panel-body" >
+
+                            <input type="hidden" id="call_back_monitor_id" value=""/>
+                            <div id="grid_table"></div>
+                        </div>
+                    </div>
+                </div>
+                <%include file="shield_list.part"/>
+            </div>
+        </div>
+        <!-- 选项卡 End -->
+    </div>
+</div>
+    ## 策略编辑
+    ## 告警屏蔽
+<article class="content shield-content" style="min-height: 0; padding-top: 0">
+    <section class="side-content-wrapper hidden" id="shield_side" data-type="close">
+        <div class="side-content open shield-edit">
+            <div class="side-detail" id="shield-detail">
+                <div class="strategy-detail info-item new-strategy">
+                    <div class="title">
+                        <img src="${STATIC_URL}alert/img/new-strategy.png">
+                        <span id="shield_action">新增屏蔽策略</span>
+                    </div>
+                    <div class="detail">
+                        <div class="detail-row hidden">
+                            <div class="subtitle lh-30">屏蔽描述</div>
+                            <div class="subcontent">
+                                <label class="config__inputItem">
+                                    <input type="text" name="shield_desc" class="alert__input" style="width: 310px;">
+                                </label>
+                                <span class="config__errorMsg" id="shield_desc_error_span"></span>
+                            </div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="subtitle">屏蔽类型</div>
+                            <div class="subcontent">
+                                <label class="config__inputItem">
+                                    <input type="radio" name="alert_type" checked data-type="icheck" data-value="mainframeMonitor" data-group="top" value="performance"><span class="iCheck-text">主机监控</span>
+                                </label>
+                                <label class="config__inputItem">
+                                    <input type="radio" name="alert_type" data-type="icheck" data-value="customMonitor" data-group="top" value="custom"><span class="iCheck-text">自定义监控</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="subtitle lh-30">屏蔽对象</div>
+                            <div class="subcontent">
+                                <input class="new-select" id="monitor_target">
+                                <span class="config__errorMsg" id="monitor_target_error_span"></span>
+                            </div>
+
+                        </div>
+                        <!-- 告警范围 -->
+                        <div class="detail-row">
+                            <div class="subtitle lh-30">屏蔽范围</div>
+                            <div class="subcontent condition_label">
+                                <label class="config__inputItem">
+                                    <input type="radio" name="shield_perform_cate" checked data-type="icheck" data-value="monitor_ip" data-group="top" value="ip"><span class="iCheck-text">按主机IP</span>
+                                </label>
+                                <label class="config__inputItem">
+                                    <input type="radio" name="shield_perform_cate" data-type="icheck" data-value="monitor_set" data-group="top" value="set"><span class="iCheck-text">按业务拓扑</span>
+                                </label>
+                            </div>
+                            <div class="subcontent hidden" id="customSet" data-type="sub">
+                                <input class="new-select" id="strategy_selector">
+                            </div>
+                            <div class="subcontent" id='allMainFrames' data-type="sub">
+                                <textarea rows="6" class="monitor-ip" placeholder="请输入主机IP，半角逗号分隔" id="shield_ip"></textarea>
+                                <span class="config__errorMsg" id="ip_error_span"></span>
+                            </div>
+
+                            <div class="subcontent hidden" id='customSet_bak' data-type="sub">
+                                <div class="subcontent-row hidden">
+                                    <input style="width:200px" name="shield_monitor_field">
+                                    <span class="pre-span">包含</span>
+                                    <input type="text"  name="shield_monitor_field_value" class="alert__input" placeholder="多个值使用,分隔">
+                                    <span class="operator-row">
+                                        <span class="new-operator" data-type="add">
+                                            <i class="fa fa-plus-circle new-add"></i>
+                                        </span>
+
+                                        <span class="new-operator" data-type="delete">
+                                            <i class="fa fa-minus-circle new-delete"></i>
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="subcontent hidden" id='mainframeSet' data-type="sub">
+                                <p class="config__subRowContent-title">集群</p>
+                                <p>
+                                    <input class="config__select" id="shield_set_selector">
+                                </p>
+                                <p class="config__subRowContent-title">模块</p>
+                                <p>
+                                    <input class="config__select" id="shield_module_selector">
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="subtitle lh-30">屏蔽时间</div>
+                            <div class="subcontent clearfix">
+                                <div class="detail-left">
+                                    <label class="config__inputBtn text-info">
+                                        <input type="radio" name="auto_process_method" value="1" checked>
+                                        <a class="king-btn-demo king-btn" title="今后1小时">1小时</a>
+                                    </label>
+                                    <label class="config__inputBtn text-info">
+                                        <input type="radio" name="auto_process_method" value="3">
+                                        <a class="king-btn-demo king-btn" title="今后3小时">3小时</a>
+                                    </label>
+                                    <label class="config__inputBtn text-info">
+                                        <input type="radio" name="auto_process_method" value="12">
+                                        <a class="king-btn-demo king-btn" title="今后12小时">12小时</a>
+                                    </label>
+                                    <label class="config__inputBtn text-info">
+                                        <input type="radio" name="auto_process_method" value="24">
+                                        <a class="king-btn-demo king-btn" title="今后1天">1天</a>
+                                    </label>
+                                    <label class="config__inputBtn text-info">
+                                        <input type="radio" name="auto_process_method" id="customTime" value="0">
+                                        <a class="king-btn-demo king-btn" title="自定义">自定义</a>
+                                    </label>
+                                </div>
+
+                                <div class="input-group date new-date hidden" id="newDate" data-date="" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
+                                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                                    <input class="form-control" size="16" type="text" value="">
+                                    <input type="hidden" id="dtp_input2" value="">
+                                    <br>
+                                </div>
+                                <span class="config__errorMsg" id="custom_date_error_span"></span>
+                            </div>
+                        </div>
+
+                        <section class="config__btnRow">
+                            <button class="king-btn-demo king-btn king-radius king-success king-btn-large" title="保存" id="save">保存</button>
+                            <button class="king-btn-demo king-btn king-radius king-default king-btn-large" title="取消" id="cancel">取消</button>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="close-btn open" id="close" data-type="close">关闭</div>
+    </section>
+</article>
+<article class="content" style="min-height: 0; padding-top: 0">
+<section class="side-content-wrapper hidden" id="strategy_detail_side" data-type="close">
+    <div class="side-content open strategy-detail">
+        <div class="side-detail" id="strategy_detail_div">
+            <div class="strategy-detail info-item">
+                <div class="clearfix">
+                    <div class="title pull-left">
+                        <i class="iconfont icon-zhujixinxi"></i>
+                        策略详情信息
+                    </div>
+                    <div class="pull-right">
+                        <button class="king-btn king-success" title="修改策略" id="modify" @click="modify_self()">修改策略</button>
+                    </div>
+                </div>
+                <div class="detail">
+                    <div class="detail-row">
+                        <div class="detail-left">
+                            <div class="subtitle">所属监控项：</div>
+                            <div class="subcontent">{{strategy_obj.monitor_name}}</div>
+                        </div>
+                        <div class="detail-left">
+                            <div class="subtitle">无数据警告：</div>
+                            <div class="subcontent">{{nodata_alarm_display}}</div>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-left">
+                            <div class="subtitle">告警标题：</div>
+                            <div class="subcontent">{{strategy_obj.display_name}}</div>
+                        </div>
+                        <div class="detail-left">
+                            <div class="subtitle">自动处理：</div>
+                            <div class="subcontent">{{strategy_obj.solution_display}}</div>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-left">
+                            <div class="subtitle lh-30">告警范围：</div>
+                            <div class="subcontent lh-30">{{strategy_obj.condition_str}}</div>
+                        </div>
+                        <div class="detail-left">
+                            <div class="subtitle lh-30">告警级别：</div>
+                            <div class="subcontent {{monitor_level_class(strategy_obj.monitor_level)}} lh-30">{{monitor_level_display(strategy_obj.monitor_level)}}</div>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-left">
+                            <div class="subtitle lh-30">检测算法：</div>
+                            <div class="subcontent lh-30">{{strategy_obj.strategy_name}}</div>
+                        </div>
+                        <div class="detail-left">
+                            <div class="subtitle lh-30">通知方式：</div>
+                            <div class="subcontent">
+                                {{{strategy_obj.notify_way_str}}}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-left">
+                            <div class="subtitle">触发条件：</div>
+                            <div class="subcontent">{{{strategy_obj.strategy_desc}}}</div>
+                        </div>
+                        <div class="detail-left">
+                            <div class="subtitle lh-30">通知角色：</div>
+                            <div class="subcontent lh-30">
+                                {{{strategy_obj.notify_man_html}}}
+##                                <div class="sideContent-role">运维</div>
+##                                <div class="sideContent-role">开发</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-left">
+                            <div class="subtitle">收敛规则：</div>
+                            <div class="subcontent">{{strategy_obj.converge_str}}</div>
+                        </div>
+                        <div class="detail-left">
+                            <div class="subtitle">通知时间段：</div>
+                            <div class="subcontent">{{strategy_obj.notice_start_hh}} : {{strategy_obj.notice_start_mm}} ~ {{strategy_obj.notice_end_hh}} : {{strategy_obj.notice_end_mm}}</div>
+                        </div>
+                    </div>
+                    <div class="loading hidden" id="strategyLoading">
+                        <div class="loading-content">
+                            <img alt="loadding" src="${STATIC_URL}img/hourglass_36.gif">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert-event info-item">
+                <div class="clearfix">
+                    <div class="title pull-left mr5">
+                        <i class="iconfont icon-gaojingshijian"></i>
+                        关联告警事件
+                    </div>
+                    <div class="date-select pull-right">
+                        查看日期：
+                        <input type="text" class="form-control time-picker" id="alarm_date" placeholder="选择日期...">
+                    </div>
+                </div>
+
+                <div class="detail" style="position: relative;">
+                    <table class="table table-header-bg table-bordered mb0">
+                        <thead>
+                            <tr>
+                                <td>告警时间</td>
+                                <td>级别</td>
+                                <td class="alert-condition">告警内容</td>
+                                <td>状态</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template v-if="strategy_alarms_table.length>0">
+                                <template v-for="alarm in strategy_alarms_table">
+                                    <tr>
+                                        <td>{{alarm.source_time.split(" ")[1]}}</td>
+                                        <td class="{{alarm.level_class}}">{{alarm.level_display}}</td>
+                                        <td class="alert-condition">
+                                            <p>维度信息：{{alarm.dimensions_display}}</p>
+                                            <p>{{alarm.raw}}</p>
+                                        </td>
+                                        <td>
+                                            {{{alarm.status_html}}}
+                                        </td>
+                                    </tr>
+                                </template>
+                            </template>
+                            <template v-if="strategy_alarms_table.length==0">
+                                <tr>
+                                    <td colspan="9" class="no-data">
+                                        无查询数据
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                        </table>
+                    <div class="loading hidden" id="relevantAlertLoading">
+                        <div class="loading-content">
+                            <img alt="loadding" src="${STATIC_URL}img/hourglass_36.gif">
+                        </div>
+                    </div>
+                    <div class="paging-wrapper clearfix" id="alarms-paging-footer">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="close-btn open" id="strategy_detail_close" data-type="close">关闭</div>
+</section>
+</article>
+<article class="content modify" style="min-height: 0; padding-top: 0">
+<section class="side-content-wrapper hidden" id="strategy_edit_side" data-type="close">
+				<div class="side-content open strategy-edit">
+					<div class="side-detail" id="strategy_edit_div">
+						<!-- 告警标题 -->
+						<section class="config__panel alert-title">
+							<div class="config__panelHead">
+								<div class="config__panelTitle pull-left">
+									<span class="config__icon config__panelIcon">
+										<i class="iconfont icon-tiaojianguolv"></i>
+									</span>
+									<span class="config__panelTitle-text required">告警标题</span>
+								</div>
+								<div class="config__panelTool pull-left">
+									<input type="text" name="" placeholder="请输入此条告警策略的标题" id="strategyTitle" v-model="display_name">
+								</div>
+							</div>
+						</section>
+						<!-- 触发条件 -->
+						<section class="config__panel" id="trigger_condition">
+							<div class="config__panelHead">
+								<div class="config__panelTitle pull-left">
+									<span class="config__icon config__panelIcon">
+										<i class="iconfont icon-tiaojianguolv"></i>
+									</span>
+									<span class="config__panelTitle-text">触发条件</span>
+								</div>
+								<div class="config__panelTool pull-right" data-type="slideItem">
+									<span class="config__icon config__panelIcon">
+										<i class="iconfont icon-jiantou1"></i>
+									</span>
+								</div>
+							</div>
+							<div class="config__panelContent">
+								<div class="detail-row">
+									<div class="subtitle lh-30">
+                                        <span class="data-tip" data-html="true" data-trigger="hover" data-placement="right" data-content="<span class='word-break'>多条过滤条件的and/or关系：以or为分隔，or的前后都是一组（）的关系。</span>">告警范围 <i class="fa fa-question-circle"></i></span>
+                                    </div>
+									<div class="subcontent form-group">
+##                                        <span class="pre-span">where</span>
+                                        <input type="hidden" id="condition_num_id" value="0"/>
+                                        <div id="condition-config-0" style="display:none">
+                                            <input class="dimension_condition_select2" style="width:100px;" id="condition_field"/>
+                                            <select class="condition_select2" style="width:80px;" id="condition_method">
+                                                <option value="eq" selected>等于</option>
+                                                <option value="gte">大于</option>
+                                                <option value="lte">小于</option>
+                                                <option value="reg">正则</option>
+                                                <option value="include">包含</option>
+                                                <option value="exclude">不包含</option>
+                                            </select>
+                                            <input type="text" class="form-control" id="condition_value" placeholder="多个值以逗号分隔" style="width:200px;"/>
+                                            <a  title="添加告警范围" class="ml10 add_condition_a" href="###" onclick="add_condition(this)"><i class="fa fa-plus"></i></a>
+                                            <a  title="删除告警范围" class="ml10 del_condition_a" ><i class="fa fa-times"></i></a>
+                                        </div>
+									</div>
+								</div>
+
+								<div class="detail-row">
+									<div class="subtitle lh-30"><span class="required">检测算法</span></div>
+                                        <div class="subcontent">
+                                            <label class="config__inputItem">
+                                                <input type="radio" name="strategy_id" checked data-type="icheck" data-target="static_threshold" value="1000"><span class="iCheck-text">静态阈值</span>
+                                            </label>
+                                            <label class="config__inputItem">
+                                                <input type="radio" name="strategy_id" data-type="icheck" data-target="strategy" value="1001"><span class="iCheck-text">同比策略（简易）</span>
+                                            </label>
+                                            <label class="config__inputItem">
+                                                <input type="radio" name="strategy_id" data-type="icheck" data-target="strategy" value="1002"><span class="iCheck-text">环比策略（简易）</span>
+                                            </label>
+                                            <label class="config__inputItem">
+                                                <input type="radio" name="strategy_id" data-type="icheck" data-target="strategy-high" value="1003"><span class="iCheck-text">同比策略（高级）</span>
+                                            </label>
+                                            <label class="config__inputItem">
+                                                <input type="radio" name="strategy_id" data-type="icheck" data-target="strategy-high" value="1004"><span class="iCheck-text">环比策略（高级）</span>
+                                            </label>
+                                        </div>
+                                        <div class="subcontent config__subRowContent">
+                                    <div class="config__subRowContent-item config__preLabel trigger-setting pull-left">
+                                        <div class="static-threshold" data-id="static_threshold">
+                                            性能指标当前值
+                                            <select class="inner-select" data-type="vue-select2" id="tAlgorithmSelect" name="method">
+                                                <option value="eq">=</option>
+                                                <option value="gte">≥</option>
+                                                <option value="gt">＞</option>
+                                                <option value="lte">≤</option>
+                                                <option value="lt">＜</option>
+                                            </select>
+                                            <input min="1" type="number" id="tAlgorithmInput" id="tAlgorithmInput" placeholder="请填写阈值..." class="inner-input" v-model="threshold" onkeypress='return event.charCode >= 48 && event.charCode <= 57'>
+                                            时，触发告警
+                                        </div>
+                                        <div class="strategy hidden" data-id="strategy">
+                                            <p class="strategy-row">
+                                                指标当前值{{strategy_display}}
+                                                <span class="strategy-up strategy-input">
+                                                    <input min="1" type="number" id="strategy_up" class="inner-input" v-model="ceil" onkeypress='return event.charCode >= 48 && event.charCode <= 57'>
+                                                </span>
+                                                ${"%"}时，触发告警
+                                            </p>
+                                            <p class="strategy-row">
+                                                指标当前值{{strategy_display}}
+                                                <span class="strategy-down strategy-input">
+                                                    <input min="1" type="number" id="strategy_down" class="inner-input strategy-down" v-model="floor" onkeypress='return event.charCode >= 48 && event.charCode <= 57'>
+                                                </span>
+                                                ${"%"}时，触发告警
+                                            </p>
+                                        </div>
+                                        <div class="strategy hidden" data-id="strategy-high">
+                                            <p class="strategy-row">
+                                                较前<input min="1" type="number" id="strategy_up_interval" class="inner-input-sm" v-model="ceil_interval" onkeypress='return event.charCode >= 48 && event.charCode <= 57'>{{strategy_display}}
+                                                <span class="strategy-up strategy-input">
+                                                    <input min="1" type="number" id="strategy_up" class="inner-input" v-model="ceil" onkeypress='return event.charCode >= 48 && event.charCode <= 57'>
+                                                </span>
+                                                ${"%"}时，触发告警
+                                            </p>
+                                            <p class="strategy-row">
+                                                较前<input min="1" type="number" id="strategy_down_interval" class="inner-input-sm" v-model="floor_interval" onkeypress='return event.charCode >= 48 && event.charCode <= 57'>{{strategy_display}}
+                                                <span class="strategy-down strategy-input">
+                                                    <input min="1" type="number" id="strategy_down" class="inner-input strategy-down" v-model="floor" onkeypress='return event.charCode >= 48 && event.charCode <= 57'>
+                                                </span>
+                                                ${"%"}时，触发告警
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <span class="config__errorMsg" id="strategy_option_error"></span>
+									</div>
+								</div>
+
+								<div class="detail-row">
+									<div class="subtitle lh-30"><span class="required">收敛规则</span></div>
+									<div class="subcontent">
+                                        <label class="config__inputItem">
+                                            <input type="radio" name="converge_id" checked data-type="icheck" data-target="ruleA" value="1"><span class="iCheck-text">收敛方式一</span>
+                                        </label>
+                                        <label class="config__inputItem">
+                                            <input type="radio" name="converge_id" data-type="icheck" data-target="ruleB" value="2"><span class="iCheck-text">收敛方式二</span>
+                                        </label>
+                                        <label class="config__inputItem">
+                                            <input type="radio" name="converge_id" data-type="icheck" data-target="ruleNone" value="0">
+                                            <span class="data-tip" data-html="true" data-trigger="hover" data-placement="right" data-content="<span class='word-break'>监控系统默认设定了内置的收敛规则，如果你有个性化的特殊收敛需求，请选择其它2种收敛规则。</span>"><span class="iCheck-text">系统默认<i class="fa fa-question-circle"></i></span></span>
+                                        </label>
+                                        <span class="config__errorMsg"></span>
+									</div>
+							        <div class="subcontent  config__subRowContent clearfix" data-type="rule-wrapper">
+                                <div class="config__subRowContent-item config__preLabel convergence-rule pull-left hidden" data-id="ruleA">
+                                    <div class="convergence-ruleA">
+										<select class="inner-select" data-type="vue-select2" id="ruleBSelect" name="converge_continuous">
+											<option value="5">5分钟</option>
+											<option value="10">10分钟</option>
+                                            <option value="15">15分钟</option>
+                                            <option value="30">30分钟</option>
+                                            <option value="60">1小时</option>
+										</select>
+										内，满足
+										<input min="1" type="number" id="ruleBInput" class="inner-input" v-model="converge_count" onkeypress='return event.charCode >= 48 && event.charCode <= 57'>
+										次告警条件时，才触发告警
+									</div>
+                                </div>
+								<div class="config__subRowContent-item config__preLabel convergence-rule pull-left" data-id="ruleB">
+									<div class="convergence-ruleB">
+										自第
+										<input min="1" type="number" id="ruleAInput" class="inner-input" v-model="converge_count" onkeypress='return event.charCode >= 48 && event.charCode <= 57'>
+										次告警后
+										<select class="inner-select" data-type="vue-select2" id="ruleASelect" name="converge_continuous">
+											<option value="5">5分钟</option>
+											<option value="10">10分钟</option>
+                                            <option value="15">15分钟</option>
+                                            <option value="30">30分钟</option>
+                                            <option value="60">1小时</option>
+										</select>
+										内不再发出告警
+									</div>
+								</div>
+                                <div class="pull-left hidden" data-id="ruleNone"></div>
+                                <span class="config__errorMsg" id="converge_err"></span>
+							</div>
+								</div>
+
+								<div class="detail-row">
+									<div class="subtitle lh-30"><span class="required">无数据告警</span></div>
+									<div class="subcontent">
+										<label class="config__inputItem">
+											<input type="radio" name="show_nodata_alarm" data-type="icheck" value="1" data-target="nodata_alarm"><span class="iCheck-text">是</span>
+										</label>
+										<label class="config__inputItem">
+											<input type="radio" name="show_nodata_alarm" data-type="icheck" checked value="0"><span class="iCheck-text">否</span>
+										</label>
+                                        <label data-id="nodata_alarm" class="hidden">
+                                        当数据连续丢失<input min="0" type="number" name="nodata_alarm" class="config__input va-middle" v-model="nodata_alarm"
+                                            style="width: 50px;min-width: 50px;" onkeypress='return event.charCode >= 48 && event.charCode <= 57'>
+									    个周期时，触发告警</label>
+                                        <label class="config__inputItem">
+                                            <span class="data-tip" data-html="true" data-trigger="hover" data-placement="right" data-content="<span class='word-break'>当监控维度的值出现断层时，是否发出告警？ 对于相对离散的数据源，建议不打开无数据告警。</span>"><i class="fa fa-question-circle"></i>说明</span>
+                                        </label>
+                                        <span class="config__errorMsg" id="nodata_alarm_error"></span>
+                                    </div>
+
+								</div>
+							</div>
+						</section>
+						<!-- 自动处理 -->
+                        <section class="config__panel" id="auto_process">
+                            <div class="config__panelHead">
+                                <div class="config__panelTitle pull-left clearfix">
+                                    <span class="config__icon config__panelIcon">
+                                        <i class="iconfont icon-tiaojianguolv"></i>
+                                    </span>
+                                    <span class="config__panelTitle-text">自动处理（状态：{{solution_is_enable?"开":"关"}}）</span>
+                                </div>
+                                <div class="config__panelTool pull-right" data-type="slideItem">
+                                    <span class="config__icon config__panelIcon">
+                                        <i class="iconfont icon-jiantou1 expanded"></i>
+                                    </span>
+                                </div>
+                                <div class="switchery_box pull-right mr10" id="auto_process_btn">
+                                    <input type="checkbox" class="js-switch-small" v-model="solution_is_enable" data-type="switch">
+                                </div>
+                            </div>
+                            <div class="config__panelContent" style="display: none">
+                                <!-- 处理方式 -->
+                                <div class="config__row">
+                                    <span class="config__panelLabel lh-30">处理方式</span>
+                                    <div class="config__rowContent">
+                                        <label class="config__inputBtn text-info">
+                                            <input type="radio" name="auto_process_method" v-model="solution_type" value="job">
+                                            <a class="king-btn-demo king-btn" title="作业平台">作业平台</a>
+                                        </label>
+                                    </div>
+                                </div>
+                                <!-- 流程列表 -->
+                                <div class="config__row">
+                                    <span class="config__panelLabel lh-30">作业列表</span>
+                                    <div class="config__rowContent">
+                                        <input class="config__select" data-type="vue-select2" id="autoProcessFlowList" name="solution_task_id">
+                                        <a class="king-btn-demo king-btn update-btn" title="" id="updateTaskList">
+                                            <i class="iconfont icon-weibiaoti2"></i>
+                                        </a>
+                                        <a class="king-btn-demo king-btn king-success" title="新建流程" id="addFlow" href="${JOB_URL}" target="_blank">
+                                            <i class="fa fa-plus btn-icon"></i>新建作业
+                                        </a>
+                                    </div>
+                                </div>
+                                <!-- 结果通知 -->
+                                <div class="config__row">
+                                    <span class="config__panelLabel lh-30">结果通知</span>
+                                    <div class="config__rowContent">
+                                        <label class="config__inputItem">
+                                            <input type="checkbox" name="solution_notice" data-type="icheck" value="begin"><span class="iCheck-text">开始执行前通知</span>
+                                        </label>
+                                        <label class="config__inputItem">
+                                            <input type="checkbox" name="solution_notice" data-type="icheck" value="end"><span class="iCheck-text">执行完成后通知</span>
+                                        </label>
+            ##							<label class="config__inputItem">
+            ##								<input type="checkbox" name="result_msg" data-type="icheck" value="all"><span class="iCheck-text">执行前后都通知</span>
+            ##                            </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+						<!-- 通知方式 -->
+						<section class="config__panel" id="alert_method">
+							<div class="config__panelHead">
+								<div class="config__panelTitle pull-left">
+									<span class="config__icon config__panelIcon">
+										<i class="iconfont icon-tiaojianguolv"></i>
+									</span>
+									<span class="config__panelTitle-text">通知方式</span>
+								</div>
+								<div class="config__panelTool pull-right" data-type="slideItem">
+									<span class="config__icon config__panelIcon">
+										<i class="iconfont icon-jiantou1"></i>
+									</span>
+								</div>
+							</div>
+                            <div class="config__panelContent">
+                                <!-- 告警级别 -->
+                                <div class="config__row">
+                                    <span class="config__panelLabel lh-30 required">告警级别</span>
+                                    <div class="config__rowContent">
+                                        <label class="config__inputBtn text-muted">
+                                            <input type="radio" name="alert_level" value="3" v-model="monitor_level">
+                                            <a class="king-btn-demo king-btn" title="轻微警告">轻微警告</a>
+                                        </label>
+                                        <label class="config__inputBtn text-info">
+                                            <input type="radio" name="alert_level" value="2" v-model="monitor_level">
+                                            <a class="king-btn-demo king-btn" title="普通警告">普通警告</a>
+                                        </label>
+                                        <label class="config__inputBtn text-danger">
+                                            <input type="radio" name="alert_level" value="1" v-model="monitor_level">
+                                            <a class="king-btn-demo king-btn" title="严重警告">严重警告</a>
+                                        </label>
+                                    </div>
+                                </div>
+                                <!-- 通知方式 -->
+                                <div class="config__row">
+                                    <span class="config__panelLabel lh-30 required">通知方式</span>
+                                    <div class="config__rowContent clearfix">
+                                        <label class="config__inputItem">
+                                            <input type="checkbox" name="notice" data-type="icheck" value="mail" v-model="notice_list">
+                                            <span class="data-tip" data-html="true" data-trigger="hover" data-placement="top" data-content="<span class='word-break'>邮件</span>">
+                                                <img src="${STATIC_URL}alert/img/mail.png" class="icheck-img">
+                                            </span>
+                                        </label>
+                                        <label class="config__inputItem">
+                                            <input type="checkbox" name="notice" data-type="icheck" value="sms" v-model="notice_list">
+                                            <span class="data-tip" data-html="true" data-trigger="hover" data-placement="top" data-content="<span class='word-break'>短信</span>">
+                                                <img src="${STATIC_URL}alert/img/message.png" class="icheck-img">
+                                            </span>
+                                        </label>
+                                        <label class="config__inputItem">
+                                            <input type="checkbox" name="notice" data-type="icheck" value="wechat" v-model="notice_list">
+                                            <span class="data-tip" data-html="true" data-trigger="hover" data-placement="top" data-content="<span class='word-break'>微信</span>">
+                                                <img src="${STATIC_URL}alert/img/wechat.png" class="icheck-img">
+                                            </span>
+                                        </label>
+                                        <label class="config__inputItem hidden">
+                                            <input type="checkbox" name="notice" data-type="icheck" value="im" v-model="notice_list">
+                                            <span class="data-tip" data-html="true" data-trigger="hover" data-placement="top" data-content="<span class='word-break'>RTX</span>">
+                                                <img src="${STATIC_URL}alert/img/rtx.png" class="icheck-img">
+                                            </span>
+                                        </label>
+                                        <label class="config__inputItem hidden">
+                                            <input type="checkbox" name="notice" data-type="icheck" data-id="phone_receiver" value="phone" v-model="notice_list">
+                                            <span class="data-tip" data-html="true" data-trigger="hover" data-placement="top" data-content="<span class='word-break'>电话</span>">
+                                                <img src="${STATIC_URL}alert/img/phone.png" class="icheck-img">
+                                            </span>
+                                        </label>
+                                        <select name="phone_receiver" data-type="vue-select2" class="config__select hidden" multiple="multiple">
+                                            %for uin, nick in other_users.items():
+                                                <option value="${uin}">${nick}(${uin})</option>
+                                            %endfor
+                                        </select>
+                                        &nbsp;&nbsp;&nbsp;
+                                        <span class="data-tip hidden" data-html="true" data-trigger="hover" data-placement="top" data-content="<span class='word-break'>只有在当前接听者选择转移下一位处理人的情况下，才会往后进行呼叫知会；如果当前接听人选择不转移，就不会给后排人员呼叫。</span>"><i class="fa fa-question-circle"></i>说明</span>
+                                        <span class="config__errorMsg" id="notice_list_error" style="float:right;"></span>
+                                    </div>
+                                </div>
+                                <!-- 通知角色 -->
+                                <div class="config__row">
+                                    <span class="config__panelLabel lh-30"><span class="required">通知角色</span></span>
+                                    <div class="config__rowContent clearfix">
+                                        <label class="config__inputItem">
+                                            <input type="checkbox" name="notice_role_list" data-type="icheck" value="Maintainers">
+                                            <span class="iCheck-text">运维</span>
+                                        </label>
+##            							<label class="config__inputItem">
+##            								<input type="checkbox" name="notice_role_list" data-type="icheck" value="OperationPlanning">
+##            								<span class="iCheck-text">运营</span>
+##            							</label>
+##            							<label class="config__inputItem">
+##            								<input type="checkbox" name="notice_role_list" data-type="icheck" value="PmpProductMan">
+##            								<span class="iCheck-text">产品</span>
+##            							</label>
+##            							<label class="config__inputItem">
+##            								<input type="checkbox" name="notice_role_list" data-type="icheck" value="PmpDBAMajor">
+##            								<span class="iCheck-text">DBA</span>
+##            							</label>
+##            							<label class="config__inputItem">
+##            								<input type="checkbox" name="notice_role_list" data-type="icheck" value="AppDevMan">
+##            								<span class="iCheck-text">开发</span>
+##            							</label>
+                                        <label class="config__inputItem">
+                                            <input type="checkbox" name="notice_role_list" data-type="icheck" data-id="responsible" value="other">
+                                            <span class="iCheck-text">其他人员</span>
+                                        </label>
+                                        <select name="responsible" data-type="vue-select2" class="config__select hidden" multiple="multiple">
+                                            %for uin, nick in other_users.items():
+                                                <option value="${uin}">${nick}(${uin})</option>
+                                            %endfor
+                                        </select>
+                                        <span class="config__errorMsg" id="notice_role_list_error" style="float:right;"></span>
+                                    </div>
+                                </div>
+                                <!-- 通知时间段 -->
+                                <div class="config__row">
+                                    <span class="config__panelLabel lh-30">通知时间段</span>
+                                    <div class="config__rowContent">
+                                        <select class="config__select alert-duration" data-type="vue-select2" id="startHour" name="notice_start_hh">
+                                            %for i in xrange(24):
+                                                <option>${("0%s" if i<10 else "%s") % i}</option>
+                                            %endfor
+                                        </select>
+                                        :
+                                        <select class="config__select alert-duration" data-type="vue-select2" id="startMinute" name="notice_start_mm">
+                                            %for i in xrange(60):
+                                                <option>${("0%s" if i<10 else "%s") % i}</option>
+                                            %endfor
+                                        </select>
+                                        &nbsp;~&nbsp;
+                                        <select class="config__select alert-duration" data-type="vue-select2" id="endHour" name="notice_end_hh">
+                                            %for i in xrange(24):
+                                                <option ${"selected" if i==23 else ""}>${("0%s" if i<10 else "%s") % i}</option>
+                                            %endfor
+                                        </select>
+                                        :
+                                        <select class="config__select alert-duration" data-type="vue-select2" id="endMinute" name="notice_end_mm">
+                                            %for i in xrange(60):
+                                                <option ${"selected" if i==59 else ""}>${("0%s" if i<10 else "%s") % i}</option>
+                                            %endfor
+                                        </select>
+                                        <label class="config__inputItem">
+                                            <span class="data-tip" data-html="true" data-trigger="hover" data-placement="right" data-content="<span class='word-break'>设置告警发出的时间段后，该监控项所产生的异常信息将只会在你所配置的时间段内才发出告警。</span>"><i class="fa fa-question-circle"></i>说明</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+						</section>
+
+						<section class="config__btnRow custom_strategy_edit">
+							<button class="king-btn-demo king-btn king-radius king-success king-btn-large" title="保存" id="save">保存</button>
+							<button class="king-btn-demo king-btn king-radius king-default king-btn-large" title="取消" id="cancel">取消</button>
+						</section>
+                        <div class="loading hidden" id="strategyeditLoading">
+                            <div class="loading-content">
+                                <img alt="loadding" src="${STATIC_URL}img/hourglass_36.gif">
+                            </div>
+                        </div>
+					</div>
+
+
+				</div>
+				<div class="close-btn open" id="strategy_edit_close" data-type="close">关闭</div>
+			</section>
+</article>
+</%block>
+<%block name="script">
+<script src="${STATIC_URL}assets/datetimepicker/js/bootstrap-datetimepicker.js"></script>
+<script src="${STATIC_URL}assets/kendoui-2015.2.624/js/kendo.all.min.js"></script>
+<script src="${STATIC_URL}alert/js/alarm_strategy.js"></script>
+<script src="${STATIC_URL}assets/icheck-1.x/icheck.min.js"></script>
+<script src="${STATIC_URL}alert/js/dataview/config.js"></script>
+<link href="${STATIC_URL}assets/switchery-master/dist/switchery.css" rel="stylesheet">
+<script src="${STATIC_URL}assets/switchery-master/dist/switchery.js"></script>
+<script src="${STATIC_URL}alert/js/configV2/shield.js"></script>
+
+<script id="data_operate" type="text/x-kendo-tmpl">
+#if(scenario == '自定义'){#
+    <div class="w100">
+
+	    <a href="\\#\\#\\#" class="grid-a f_r btn btn-xs btn-warning" title="编辑"  data-placement='top'  id="moniotr_data_#=id#"  onclick="edit_monitor('#=id#')"><i class="glyphicon glyphicon-edit"></i></a>
+	#if(is_allow_delete){#
+	    <a href="\\#\\#\\#" class="grid-a f_r btn btn-xs btn-danger" title="删除"  data-placement='top' monitorid="#=id#" monitor_name="#=monitor_name#" onclick="delete_monitor(this)"><i class="glyphicon glyphicon-remove"></i></a>
+	#}#
+	</div>
+#}else{#
+	<div class="w100">
+
+	<a href="\\#\\#\\#" class="grid-a f_r btn btn-xs btn-info" title="新增策略"  data-placement='top'  id="moniotr_data_#=id#"  onclick="add_bp_strategy_quick('#=id#', '#=monitor_target#')"><i class="fa fa-plus"></i></a>
+
+	</div>
+#}#
+
+</script>
+
+<script id="alrm_data_operate" type="text/x-kendo-tmpl">
+<div class="w100">
+	#if(is_enabled){#
+        <a href="\\#\\#\\#" class="grid-a f_r alert-switch-off" title="点击后停用"  data-placement='top' alarmid="#=id#" data='0' onclick="operate_alarm(this)"><span></span></a>
+	#}else{#
+		<a href="\\#\\#\\#" class="grid-a f_r alert-switch-on" title="点击后启用"  data-placement='top' alarmid="#=id#" data='1' onclick="operate_alarm(this)"><span></span></a>
+	#}#
+	#if(scenario == 'custom'){#
+	    <a href="\\#\\#\\#" class="grid-a f_r btn btn-xs btn-warning" title="编辑" data-placement='top' onclick="edit_strategy_quick('#=id#', this, '#=s_id#')"><i class="glyphicon glyphicon-edit"></i></a>
+	#}else{#
+	    <a href="\\#\\#\\#" class="grid-a f_r btn btn-xs btn-warning" title="编辑" data-placement='top' onclick="edit_bp_strategy_quick('#=id#')"><i class="glyphicon glyphicon-edit"></i></a>
+	#}#
+	<a href="\\#\\#\\#" class="grid-a f_r btn btn-xs btn-danger" title="删除"  data-placement='top' id="alram_data_#=id#" onclick="del_alarm_strategy(this, '#=id#', 'quick', get_alarm_data)"><i class="glyphicon glyphicon-remove"></i></a>
+</div>
+</script>
+
+<script id="noity_str" type="text/x-kendo-tmpl">
+	<div  class='notic-people  table-td gridcell-icon'>
+		<span>#=notify_man_html#</span>
+	</div>
+</script>
+
+<script id="strategy_display_name" type="text/x-kendo-tmpl">
+    <span class='table-td'>
+        <a href='\\#\\#\\#' onclick='javascript: open_strategy_detail_quick("#: id#", this, "#=s_id#")'>#: display_name #</a>
+    </span>
+</script>
+
+
+<script id="tip_template" type="text/x-kendo-template">
+	<p>#=target.data('title')#</p>
+</script>
+
+<%!
+import json
+%>
+<script>
+    from_overview = false;
+    alarm_strategy_id=0
+    run_init = false;
+    init_strategy_vue_for_read();
+    init_strategy_vue_for_edit();
+	// 重置
+    var monitor_scenario = "performance"
+    var tab = "${tab}";
+    if (tab == "shield"){
+        $("a[href=#shield_list]").click();
+    }
+	$(".add-config").click(function(){
+		var data = $(this).attr('data');
+		var hostindex_id = $(this).attr('hostindex_id');
+		if(data=='performance' || data=='custom'){
+			var url = '${SITE_URL}${cc_biz_id}/config/'+data+'/0/?hostindex_id='+hostindex_id;
+		}else{
+			var url = '${SITE_URL}${cc_biz_id}/config/'+data+'/';
+		}
+		open_div(url);
+		//openDetailIframe(url);
+	})
+
+    $("#performance_tab").on("click", function(){
+        monitor_scenario = "performance"
+        get_config_data();
+    })
+    $("#custom_tab").on("click", function(){
+        monitor_scenario = "custom"
+        get_config_data();
+    })
+
+
+	function edit_monitor(monitorid){
+        var url = '${SITE_URL}${cc_biz_id}/config/custom/'+monitorid+'/';
+        open_div(url);
+        //openDetailIframe(url);
+	}
+    function delete_monitor (obj){
+    	if($(obj).attr("disabled")){
+    		return false;
+    	}
+    	$(obj).attr("disabled", true);
+    	var monitor_id = $(obj).attr('monitorid');
+    	var monitor_name = $(obj).attr('monitor_name');
+    	var confirm_content = '确认删除?<br>监控名称：' + monitor_name;
+        _app_confirm(confirm_content, function(){
+        	$(obj).html('<img alt="loadding" src="'+static_url+'img/loading_2_16x16.gif">');
+        	$(obj).attr('title', '删除中')
+            $.ajax({
+                type: 'POST',
+                dataType: "json",
+                url: site_url + cc_biz_id+"/delete_monitor_config/",
+                data: {
+                    monitor_id: monitor_id,
+                },
+                success: function(data){
+                	$(obj).html('<i class="glyphicon glyphicon-remove"></i>');
+        			$(obj).attr('title', '删除')
+                    if(data.result){
+                    	alert_topbar("删除成功", "success");
+                        get_config_data();
+                    }
+                    else{
+                    	$(obj).attr("disabled", false);
+                        d = app_alert("删除监控失败，请联系管理员" + data.message, "fail");
+                    }
+                }
+            })
+        }, function(){
+        	$(obj).attr("disabled", false);
+        });
+    }
+    function edit_strategy_quick(stragegy_id, obj, s_id){
+        monitor_id = $(obj).closest("table").find("th[data-index=8]").attr("monitor_id");
+        $("#dimension_field").val($(obj).closest("table").find("th[data-index=8]").attr("dimensions"));
+        $("#s_id").val(s_id);
+        edit_strategy(stragegy_id);
+    }
+    function open_strategy_detail_quick(stragegy_id, obj, s_id){
+        monitor_id = $(obj).closest("table").find("th[data-index=8]").attr("monitor_id");
+        $("#dimension_field").val($(obj).closest("table").find("th[data-index=8]").attr("dimensions"));
+        $("#s_id").val(s_id);
+        open_stragety_detail_side(stragegy_id);
+    }
+    function add_bp_strategy_quick(monitor_id, hostindex_id){
+        open_div(site_url + cc_biz_id + '/bp/config/performance/0/?monitor_id='+monitor_id+'&hostindex_id='+hostindex_id);
+    }
+    function edit_bp_strategy_quick(stragegy_id){
+        open_div('${SITE_URL}${cc_biz_id}/bp/config/performance/' + stragegy_id + '/');
+    }
+    function operate_monitor(obj){
+    	if($(obj).attr("disabled")){
+    		return false;
+    	}
+    	$(obj).attr("disabled", true);
+        var monitor_id = $(obj).attr('monitorid');
+    	var is_enabled = $(obj).attr('data');
+    	var show_type = is_enabled==1 ? '启用' : '停用';
+    	var url = '${SITE_URL}${cc_biz_id}/config/operate_monitor/' + monitor_id +'/';
+    	var confirm_content = '确认' + show_type + '?';
+    	_app_confirm(confirm_content, function(){
+	    	$.post(url, {
+	    		'is_enabled': is_enabled
+	    	}, function(data){
+	            if(data.result){
+	            	alert_topbar(show_type+"成功", "success");
+	                // d = app_tip(show_type+"成功", "success");
+	                // // 1s 后关闭
+	                // setTimeout(function() {
+			            // d.close().remove();
+			        // }, 1000);
+	                get_config_data();
+	            }
+	            else{
+	            	$(obj).attr("disabled", false);
+	                d = app_alert(data.message, "fail");
+	            }
+	    	}, 'json');
+    	}, function(){
+    		$(obj).attr("disabled", false);
+    	})
+    }
+    function operate_alarm(obj){
+	   	if($(obj).attr("disabled")){
+    		return false;
+    	}
+    	$(obj).attr("disabled", true);
+    	var alarmid = $(obj).attr('alarmid');
+    	var is_enabled = $(obj).attr('data');
+    	var show_type = is_enabled==1 ? '启用' : '停用';
+    	var url = '${SITE_URL}${cc_biz_id}/config/operate_alram/' + alarmid +'/';
+    	var confirm_content = '确认' + show_type + '?';
+    	_app_confirm(confirm_content, function(){
+	    	$.post(url, {
+	    		'is_enabled': is_enabled
+	    	}, function(data){
+	            if(data.result){
+	            	alert_topbar(show_type+"成功", "success");
+	            	get_alarm_data(alarmid);
+                    var enable_cnt = parseInt($(obj).closest("tr.k-detail-row").prev().find(".text-success").text());
+                    var disable_cnt = parseInt($(obj).closest("tr.k-detail-row").prev().find(".text-danger").text());
+                    enable_cnt = (is_enabled == 1)?(enable_cnt + 1) :(enable_cnt -1);
+                    disable_cnt = (is_enabled == 1)?(disable_cnt - 1) :(disable_cnt+1);
+                    $(obj).closest("tr.k-detail-row").prev().find(".text-success").text(enable_cnt);
+                    $(obj).closest("tr.k-detail-row").prev().find(".text-danger").text(disable_cnt);
+	            }
+	            else{
+	            	$(obj).attr("disabled", false);
+	                d = app_alert(data.message, "fail");
+	            }
+	    	}, 'json')
+    	}, function(){
+    		$(obj).attr("disabled", false);
+    	})
+    }
+    function get_alarm_data(alram_strategy_id){
+    	grid = $("#alram_data_"+alram_strategy_id).parents('.k-detail-row [data-role="grid"]').eq(0).data("kendoGrid");
+		grid.dataSource.read();
+    }
+    function get_config_data(){
+    	$('#grid_table').data('kendoGrid').dataSource.read({
+            'monitor_scenario': monitor_scenario,
+        }).then(function(){
+            // reset page
+            if ($('#grid_table').data('kendoGrid').dataSource.data().length > 0){
+                $('#grid_table').data('kendoGrid').dataSource.page(1);
+            }
+
+            if (monitor_scenario == "performance"){
+                $('#grid_table').data('kendoGrid').hideColumn(2);
+                $('#grid_table').data('kendoGrid').hideColumn(3);
+                $('#grid_table').data('kendoGrid').hideColumn(4);
+
+            }else{
+                $('#grid_table').data('kendoGrid').showColumn(2);
+                $('#grid_table').data('kendoGrid').showColumn(3);
+                $('#grid_table').data('kendoGrid').showColumn(4);
+
+            }
+        });
+
+    }
+	function iframeCallBack(id){
+		// 取消、返回时不刷新数据
+		if(id){
+			$("#call_back_monitor_id").val(id);
+			// 展示需要编辑的项
+			//var grid = $("#grid_table").data("kendoGrid");
+			//grid.expandRow(".k-master-row:first");
+		}
+        get_config_data();
+	}
+
+    function submit_strategy_data_quick(param, alram_strategy_id, is_auto){
+        var url = site_url + cc_biz_id +'/config/strategy_save_quick/'+alram_strategy_id+'/';
+        var s_id = $.trim($("#edit_s_id").val());
+        $.post(url,{
+        	's_id': s_id,
+        	'param': JSON.stringify(param)
+        }, function(feedback){
+        	$("#submit_stragegy").html('确定');
+        	if (feedback.result){
+        		$("#tip_config").text('');
+        		alert_topbar(feedback.message, "success");
+    			// 关闭当前的 弹出框
+    			var d = dialog({id: 'add_alarm_strategy'});
+    			d.close().remove();
+        		get_alarm_data(alram_strategy_id);
+        	}else{
+    			// 提示错误信息
+    			$("#tip_all").text(feedback.message);
+    			$("#submit_stragegy").attr("disabled", false);
+        	}
+        }, 'json');
+    }
+
+    function tooltip(){
+    	$(".show_tip").kendoTooltip({
+    		width:250,
+    		position:"top",
+    		content: kendo.template($("#tip_template").html())
+    	});
+    }
+
+    function detailInit(e) {
+        var monitor_id = e.data.id;
+        var dimensions = e.data.dimensions;
+        var columns = [
+                {
+                    field: 'display_name',
+                    title: '策略名称',
+                    width: 120,
+                    headerAttributes: {"class": "table-header-cell"},
+                    template: kendo.template($("#strategy_display_name").html())
+                },
+                {
+                    field: 'strategy_name',
+                    title: '算法',
+                    width: 160,
+                    headerAttributes: {"class": "table-header-cell"},
+                    template: "<span class='table-td'>#: strategy_name #</span>"
+                },
+                {
+                    field: 'monitor_level_name',
+                    title: '告警级别',
+                    headerAttributes: {"class": "table-header-cell"},
+                    template: "<span class='#: monitor_level_color #' ><strong>#: monitor_level_name #</strong></span>",
+                    width: 120
+                },
+                {
+                    field: 'condition_str',
+                    title: '告警条件',
+                    width: "auto",
+                    headerAttributes: {"class": "table-header-cell"},
+                    template: "<span class='data-tip word-break table-td ellipsis-data' data-html='true' data-trigger='hover' data-placement='top' data-content='<span class="+'"word-break"'+">#: strategy_desc #</span>'>#= strategy_desc #</span>"
+                },
+                {
+                    field: 'solution_name',
+                    title: '处理动作',
+                    width: "auto",
+                    headerAttributes: {"class": "table-header-cell"},
+                    template: "<span class='table-td'>#: solution_name #</span>"
+                },
+                {
+                    field: 'notify_way_str',
+                    title: '通知方式',
+                    width: "auto",
+                    headerAttributes: {"class": "table-header-cell"},
+                    template: "<span class='table-td'>#= notify_way_str #</span>"
+                },
+                {
+                    field: 'all_noity_str',
+                    title: '通知角色',
+                    width: "auto",
+                    headerAttributes: {"class": "table-header-cell"},
+                    template: kendo.template($("#noity_str").html())
+                },
+                {
+                	hidden: false,
+                    title: '状态',
+                    field: 'is_enabled_str',
+                    attributes: {"class": "table-td"},
+                    headerAttributes: {"class": "table-header-cell"},
+                    width: 90,
+                    template: "#= is_enabled_str #"
+                },
+                {
+                    title: '操作',
+                    width: 111,
+                    headerAttributes: {"class": "table-header-cell", "monitor_id": monitor_id, "dimensions": dimensions},
+                    template: kendo.template($("#alrm_data_operate").html())
+                }
+            ];
+        if (monitor_scenario == "performance"){
+            columns = columns.slice(1)
+        }
+        $("<div/>").appendTo(e.detailCell).kendoGrid({
+        	resizable: true,
+        	scrollable: false,
+            dataSource: {
+                transport: {
+                    read: {
+                        url: "${SITE_URL}${cc_biz_id}/config/rel_strategy/",
+                        type: 'GET',
+                        dataType: "json",
+                        data: {'monitor_id': e.data.id}
+                    }
+
+                }
+            },
+        	dataBound: function(){
+            	var tbody = $(e.detailCell).find('tbody').html();
+                	if(!tbody){
+                	$(e.detailCell).find('tbody').html('<tr><td colspan="11" style="text-align: center">没有数据</td></tr>');
+            	}
+            	$('.data-tip').popover();
+            },
+            columns: columns
+        })
+    }
+    $('#grid_table').kendoGrid({
+        pageable: {
+            pageSize: 15, //如果要显示分页，必须设置pageSize
+            buttonCount: 5,
+            messages: {
+                empty: "",
+                first: "第一页",
+                last: "最后一页",
+                next: "下一页",
+                previous: "上一页"
+            }
+        },
+    	resizable: true,
+    	scrollable: false,
+        dataSource: {
+            transport: {
+                read: {
+                    url: "${SITE_URL}${cc_biz_id}/config/get_config_data/",
+                    type: 'GET',
+                    dataType: "json",
+                    data: {
+                            'monitor_scenario': monitor_scenario
+                          }
+                }
+
+            }
+        },
+    	dataBound: function(){
+        	var tbody = $("#grid_table tbody").html();
+        	if(!tbody){
+            	$("#grid_table tbody").html('<tr><td colspan="18" style="text-align: center">没有数据</td></tr>');
+                return
+        	}
+        	$('.data-tip').popover();
+        	//setTimeout('tooltip()',200);
+        	var call_back_monitor_id = $("#call_back_monitor_id").val();
+        	// 展开编辑的内嵌表格
+        	if(call_back_monitor_id){
+        		var obj = $("#moniotr_data_"+call_back_monitor_id).parents('.k-master-row').eq(0);
+    			// 自动展开内嵌表格内容
+    			var grid = $("#grid_table").data("kendoGrid");
+    			grid.expandRow(obj);
+    			$("#call_back_monitor_id").val('');
+        	}
+        },
+        detailInit: detailInit,
+##        columnMenu: true,
+        sortable: true,
+        columns: [
+            {
+                title: '监控名称',
+                field: 'monitor_name',
+                width: 170,
+                template: "<span>#: monitor_name #</span>"
+            },
+            {
+                title: '监控类型',
+                field: 'monitor_type',
+                width: 120
+            },
+            {
+                title: '监控源',
+                hidden: true,
+                field: 'monitor_result_table_id',
+                width: "auto"
+            },
+            {
+                hidden: true,
+                title: '监控指标',
+                field: 'monitor_field',
+                width: "auto"
+            },
+            {
+                hidden: true,
+                title: '监控维度',
+                field: 'dimensions',
+                width: "auto"
+            },
+            {
+                title: '策略数',
+                field: 'enable_strategy_cnt',
+                template: "<span><span class='text-success'>#: enable_strategy_cnt #</span> / <span class='text-danger'>#: disable_strategy_cnt #</span></span>",
+                width: 120            },
+            {
+                title: '操作',
+                template: kendo.template($("#data_operate").html()),
+                width: 120
+            }
+        ]
+})
+    $('#grid_table').click("tr.k-master-row", function(event){
+        var $target = $(event.target);
+        if ($target.closest("a.grid-a").length > 0){
+            return
+        }
+        $target.closest("tr.k-master-row").find("a.k-icon").click();
+    });
+    %if alarm_strategy_id > 0:
+        edit_bp_strategy_quick(${alarm_strategy_id});
+    %endif
+</script>
+<script src="${STATIC_URL}alert/js/performanceV2/performance.js?v=${STATIC_VERSION}"></script>
+</%block>

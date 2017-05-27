@@ -1,0 +1,97 @@
+<link href="${STATIC_URL}alert/font/iconfont.css" rel="stylesheet"> 
+<div class="panel-heading">告警策略
+	<!-- 场景的新增页面 没有新增按钮	 -->
+	<input type="hidden" id="is_scene_new_id" value="${1 if is_scene_new else 0}"/>
+	% if not is_scene_new:
+	<a href="###" onclick="edit_strategy('0')" class="king-btn king-primary pull-right new-alert-style"><i class="fa fa-plus"></i> 新建告警策略</a>
+	% endif
+	<span id="tip_config" class="tips fr mr20" style="color: #b94a48"></span>
+</div>
+<div id="strategy_table" class="panel-body">
+	<table class="table table-header-bg table-bordered table-hover">
+	    <thead>
+	        <tr>
+                <th>策略名称</th>
+	            <th style="width: 120px">算法</th>
+	            <th>告警条件</th>
+	            <th style="width: 50px;">级别</th>
+	            <th>处理动作</th>
+	            <th>通知方式</th>
+	            <th>通知角色</th>
+	            <th style="width: 80px;">状态</th>
+	            <th style="width: 110px;">操作</th>
+	        </tr>
+	    </thead>
+	    <tbody id="strategy_body">
+	    	<tr>
+	    		<td colspan="9" style="text-align: center">
+		    		<div class="tc bc pt15 pb15 loading-box">
+	                    <img alt="loadding" src="${STATIC_URL}img/loading_2_24x24.gif">
+	                    数据加载中,请稍候...
+	                </div>
+				</td>
+	    	</tr>
+	    </tbody>
+	</table>
+</div>
+<script src="${STATIC_URL}alert/js/alarm_strategy.js"></script>
+<script>
+$(function(){
+	get_strategy('');
+})
+// 获取监控策略列表
+function get_strategy(obj){
+    $("#strategy_body").html('<tr><td colspan="9" style="text-align: center">'+
+		    		'<div class="tc bc pt15 pb15 loading-box">'+
+	                    '<img alt="loadding" src="${STATIC_URL}img/loading_2_24x24.gif">'+
+	                    '数据加载中,请稍候...'+
+	                '</div></td></tr>');
+	var url = "${SITE_URL}${cc_biz_id}/config/strategy/";
+	$.get(url, {
+		's_id':'${s_id}',
+		'is_scene_new': '${"1" if is_scene_new else ""}'
+		},function(data){
+		$("#strategy_body").html(data)
+	})
+	
+}
+function operate_alarm_strategy(obj){
+   	if($(obj).attr("disabled")){
+		return false;
+	}
+	$(obj).attr("disabled", true);
+	var alram_strategy_id = $(obj).attr('alram_strategy_id');
+	var is_enabled = $(obj).attr('data');
+	var show_type = is_enabled==1 ? '启用' : '停用';
+	var url = '${SITE_URL}${cc_biz_id}/config/operate_alarm_strategy/' + alram_strategy_id +'/';
+	var confirm_content = '确认' + show_type + '?';
+	$.post(url, {
+		'is_enabled': is_enabled
+	}, function(data){
+        if(data.result){
+        	// 标记用户已经操作过告警策略
+        	$("#is_alarm_strategy_edit").val('1');
+        	// 刷新数据
+        	get_strategy(obj);
+        }
+        else{
+        	$(obj).attr("disabled", false);
+            d = app_alert(data.message, "fail");
+        }
+	}, 'json')
+}
+
+function _app_confirm(msg, callback1, callback2) {
+    var d = dialog({
+        width: 260,
+        title: '确认',
+        content: msg,
+        okValue: '确定',
+        ok: function() {callback1()},
+        cancelValue: '取消',
+        cancel: function() {callback2()}
+    })
+    d.show();
+   return d;
+}
+</script>

@@ -1,0 +1,202 @@
+<%inherit file="/monitor/base_new.html"/>
+<%block name="css">
+<!-- 页面右侧正文 -->
+<link rel="stylesheet" type="text/css" href="${STATIC_URL}alert/css/event_center/style.css?v=2">
+<link rel="stylesheet" type="text/css" href="${STATIC_URL}alert/css/event_center/configure.css">
+<link rel="stylesheet" type="text/css" href="${STATIC_URL}alert/css/event_center/calendar.css?v=1">
+<link rel="stylesheet" type="text/css" href="${STATIC_URL}alert/css/event_center/calendar-new.css?v=1">
+<link rel="stylesheet" href="${STATIC_URL}assets/kendoui-2015.2.624/styles/kendo.common.min.css" />
+<link rel="stylesheet" href="${STATIC_URL}assets/kendoui-2015.2.624/styles/kendo.default.min.css" />
+</%block>
+
+<%block name="content">
+    <style>
+.system-event-table .item-img .item-info {
+    text-align: left;
+}
+
+    </style>
+  <div class="iframe-mask hidden"></div>
+<div class="page">
+		<article class="content mb20">
+			<section class="calendar" id="calendar"></section>
+			<section class="side-content-wrapper hidden" id="sideContent" data-type="close">
+				<div class="side-content">
+					<div class="event-list info-item">
+						<div class="clearfix">
+							<div class="title pull-left">
+								<i class="iconfont icon-zhujixinxi"></i>
+								事件列表（<span id="listDate"></span>）
+							</div>
+						</div>
+						<div class="king-block event-list-panel" id="tab1_demo1">
+						    <ul class="nav nav-tabs nav-tabs-left" data-toggle="tabs">
+						        <li class="active">
+						            <a href="#alert" role="tab" data-toggle="tab">
+						            	<button class="king-btn current nav-button" title="告警事件">告警事件</button>
+						            </a>
+						        </li>
+						        <li class="">
+						            <a href="#system" role="tab" data-toggle="tab">
+						            	<button class="king-btn nav-button" title="系统事件">操作事件</button>
+						            </a>
+						        </li>
+						        <li class="hide">
+						            <a href="#common" role="tab" data-toggle="tab">
+						            	<button class="king-btn nav-button" title="共性事件">共性事件</button>
+						            </a>
+						        </li>
+                                <!-- 告警事件搜索 -->
+						        <li class="pull-right" data-type="search" id="alertSearch">
+						            <input type="text" name="alertSearch" class="config__input va-middle">
+						            <button class="king-btn king-info keyword-search">搜索</button>
+						        </li>
+						        <!-- 系统事件搜索 -->
+						        <li class="pull-right hidden" data-type="search" id="systemSearch">
+						            <input type="text" name="systemSearch" class="config__input va-middle">
+						            <button class="king-btn king-info keyword-search">搜索</button>
+						        </li>
+						        <!-- 共性事件搜索 -->
+						        <li class="pull-right hidden" data-type="search" id="commonSearch">
+						            <input type="text" name="commonSearch" class="config__input va-middle">
+						            <button class="king-btn king-info keyword-search">搜索</button>
+						        </li>
+						    </ul>
+						    <div class="king-block-content tab-content">
+						        <div class="tab-pane active" role="tabpanel" id="alert">
+						            <div class="checkbox-group">
+						            	<label class="config__inputItem">
+						            		<input type="checkbox" id="notified" value="notified" v-model="status_list">
+						            		<span class="iCheck-text">已通知</span>
+						            	</label>
+						            	<label class="config__inputItem">
+						            		<input type="checkbox" id="skipped" value="skipped" v-model="status_list">
+						            		<span class="iCheck-text">被收敛</span>
+						            	</label>
+						            	<label class="config__inputItem">
+						            		<input type="checkbox" id="shield" value="shield" v-model="status_list">
+						            		<span class="iCheck-text">被屏蔽</span>
+						            	</label>
+						            </div>
+
+                                    <div class="empty-item load-more hide">
+						            	今天没有告警事件
+						            </div>
+
+                                    <div class="load-more" v-if="no_search_items">
+						            	搜索不到匹配的事件
+						            </div>
+
+						            <table class="alert-event-table">
+						            	<tbody>
+                                            <template v-for="(time, item_data) in items">
+                                                <tr>
+                                                    <td class="time">{{ time }}</td>
+                                                    <td class="items">
+                                                        <template v-for="(i, item) in item_data">
+                                                            <div class="alert-event-item" data-alarm_id="{{ item.id }}">
+                                                                <div class="{{ item.level | get_alarm_level_class }} inner-item">
+                                                                    <div class="inner-title">
+                                                                        <div class="title-text emit">{{ item.alarm_content.title }}</div>
+                                                                        <div class="title-icon">
+                                                                            <i class="fa {{ item.status | get_alarm_status_class }}"></i>
+                                                                        </div>
+                                                                    </div>
+                                                                    <p v-if="item.alarm_content.is_performance_alarm" class="inner-content emit">维度信息：{{ item.alarm_content.dimension }}</p>
+                                                                    <p v-else class="inner-content emit">告警对象：{{ item.alarm_content.source_name }}</p>
+                                                                    <p class="inner-content emit">告警内容：{{ item.alarm_content.content }}</p>
+                                                                </div>
+                                                            </div>
+                                                        </template>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                            <!-- 加载遮罩 -->
+                                            <div class="loading hide" id="alarmLoading" style="z-index: 5; color: white;">
+                                                <div class="loading-content">
+                                                    <img alt="loadding" src="${STATIC_URL}img/hourglass_36.gif">
+                                                    加载中，请稍等
+                                                </div>
+                                            </div>
+						            	</tbody>
+						            </table>
+                                    <div class="load-more" id="loadAlertEvent" v-if="show_more_button" v-on:click="load_more_data">
+						            	查看更多
+						            </div>
+						        </div>
+						        <div class="tab-pane" role="tabpanel" id="system">
+						            <div class="checkbox-group">
+						            	<label class="config__inputItem">
+						            		<input type="checkbox" id="create" value="create" v-model="status_list">
+						            		<span class="iCheck-text add">新增</span>
+						            	</label>
+						            	<label class="config__inputItem">
+						            		<input type="checkbox" id="update" value="update" v-model="status_list">
+						            		<span class="iCheck-text modify">修改</span>
+						            	</label>
+						            	<label class="config__inputItem">
+						            		<input type="checkbox" id="delete" value="delete" v-model="status_list">
+						            		<span class="iCheck-text delete">删除</span>
+						            	</label>
+						            </div>
+
+                                    <div class="empty-item load-more hide">
+						            	今天没有操作事件
+						            </div>
+
+                                    <div class="load-more" v-if="no_search_items">
+						            	搜索不到匹配的事件
+						            </div>
+
+						            <table class="system-event-table">
+						            	<tbody>
+                                            <template v-for="item in items">
+						            		    <tr>
+                                                    <td class="time">{{ item.operate_time | get_operate_time_display }}</td>
+                                                    <td class="item-img {{ item.operate }}" data-qq="{{ item.operator }}" data-name="{{ item.operator_name }}">
+                                                        <img v-bind:src="item.operator | get_qq_avatar_url">
+                                                    </td>
+                                                    <td class="items">
+                                                        <p class="td-row">操作对象：{{ item.config_title }}</p>
+                                                        <p class="td-row">操作类型：<span class="{{ item.operate }} item-span">{{ item.operate | get_operate_display }}</span></p>
+                                                        <p class="td-row">操作详情：{{{ item.operate_desc | get_operate_desc }}}</p>
+                                                    </td>
+                                                </tr>
+                                            </template>
+						            	</tbody>
+						            </table>
+						        </div>
+						        <div class="tab-pane hide" role="tabpanel" id="common">
+						            <h4 class="font-w300 push-15">
+						                            共性事件
+						                        </h4>
+						            <p>
+						                敬请期待
+						            </p>
+						        </div>
+
+						    </div>
+						</div>
+					</div>
+				</div>
+				<div class="close-btn" id="close" data-type="close">关闭</div>
+			</section>
+            <!-- 加载遮罩 -->
+            <div class="loading hide" id="listLoading">
+                <div class="loading-content">
+                    <img alt="loadding" src="${STATIC_URL}img/hourglass_36.gif">
+                    加载中，请稍等
+                </div>
+            </div>
+		</article>
+	</div>
+</%block>
+
+<%block name="script">
+<script src="${STATIC_URL}assets/daterangepicker-2.0/js/moment.js"></script>
+<script src="${STATIC_URL}alert/js/event_center/calendar.js"></script>
+<script src="${STATIC_URL}alert/js/event_center/local-calendar.js?v=3"></script>
+<script src="${STATIC_URL}assets/highcharts-4.1.7/js/highcharts.js"></script>
+<script src="${STATIC_URL}assets/highcharts-4.1.7/js/highcharts-more.js"></script>
+<script src="${STATIC_URL}assets/kendoui-2015.2.624/js/kendo.all.min.js"></script>
+</%block>

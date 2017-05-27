@@ -1,0 +1,557 @@
+<%inherit file="/monitor/base_new.html"/>
+
+
+        <%block name="content">
+        <link rel="stylesheet" type="text/css" href="${STATIC_URL}alert/css/configV2/configure.css">
+        <style>
+            article.content .side-content-wrapper > .side-content .single-detail .relevant-alert-info span.active {
+                border: inset;
+                border-width: 2px;
+                border-color: #655656;
+            }
+            article.content .side-content-wrapper > .side-content .single-detail .relevant-alert-info .title-badge{
+                cursor: pointer;
+            }
+            article.content .side-content-wrapper > .side-content .single-detail .relevant-monitor-info table .operation i.disabled {
+                color: rgba(128, 128, 128, 0.45) !important;
+                cursor: not-allowed;
+            }
+##            .required {
+##                margin-left: 4px;
+##                color: #f00;
+##            }
+            .loading-wrapper{
+                color: white;
+            }
+            .content{
+                min-height: 800px;
+            }
+            .status.default {
+                background-color: #c4c4c4;
+            }
+            .component-item.default {
+                color: #c4c4c4;
+            }
+            span.component-item{
+                margin-right: 5px; !important;
+            }
+            i.expanded {
+                -webkit-transform: rotate(180deg);
+                -ms-transform: rotate(180deg);
+                transform: rotate(180deg);
+            }
+            i.icon-jiantou1 {
+                display: block;
+            }
+            .ellipsis-data {
+                max-width: 300px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;
+            }
+        </style>
+            <section class="tips hidden" id="tips">
+                <div class="main-tips">
+                    <p class="title">温馨提示</p>
+                    <div class="main">
+                        检测到您的业务尚未开启监控，点击下面按钮开启主机指标采集，10-20分钟后刷新此页面即可查看到主机数据，请耐心等待！
+                    </div>
+                    <button type="button" class="collection-btn" id="collection">开始采集</button>
+                </div>
+            </section>
+            <article class="content" id="bp_index">
+                <section class="filter">
+                    <div class="panel panel-default">
+                        <div class="panel-heading panel-title">
+                            条件过滤
+                            <div class="config__panelTool pull-right" data-type="slideItem">
+                                <span class="config__icon config__panelIcon">
+                                    <i class="iconfont icon-jiantou1"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="panel-body panel-content clearfix" id="panelContent" style="display: none">
+                            <div class="condition-left pull-left">
+                                <div class="clearfix condition-row" data-type="condition-row">
+                                    <div class="pull-left condition-item">
+                                        <p class="title">集群名</p>
+                                        <input id="set-select2">
+                                    </div>
+                                    <div class="pull-left condition-item">
+                                        <p class="title">模块名</p>
+                                        <input id="mod-select2">
+                                    </div>
+                                    <div class="pull-left condition-item">
+                                        <p class="title">按属性分组展示</p>
+                                        <input id="property-select2">
+                                    </div>
+                                    <div class="pull-left condition-item hidden">
+                                        <p class="title">状态</p>
+                                        <input id="status-select2">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="condition-right pull-left">
+                                <div class="pull-left condition-item condition-input">
+                                    <p class="title">IP / 主机名</p>
+                                    <textarea rows="1" class="filter-input" id="ip-filter" data-type="filter" placeholder="输入多个IP时，请用换行分隔"></textarea>
+                                    <div class="msg hidden">IP/主机名有误，请重新输入！</div>
+                                </div>
+                            </div>
+
+                            <div class="filter-more" id="filterMore"><span>更多</span><i class="iconfont icon-jiantou1"></i></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="tools clearfix">
+                    <div class="pull-left">
+                        <a class="king-btn king-default select-all" title="all">
+                            <input type="checkbox" name="item" id="select_all">
+                            <label for="select_all">全选</label>
+                        </a>
+                        <a class="king-btn king-primary" title="" disabled data-toggle="tooltip" data-placement="top" id="batchCheck" @click="multiple_hosts_graph_btn_click($event)">批量查看</a>
+                        <a class="king-btn king-primary" title="" disabled data-toggle="tooltip" data-placement="top" id="batchAdd" @click="add_monitor($event, 1)">批量增加策略</a>
+                        <a class="king-btn king-primary" title="" disabled data-toggle="tooltip" data-placement="top" id="batchAccess" @click="access_all($event)">批量采集上报</a>
+                        <a class="king-btn king-primary" title="" @click="add_monitor($event)">新增告警策略</a>
+
+                    </div>
+                    <div class="pull-right">
+                        <span class="last-update" >
+                            上次更新时间：<span id="update_time">加载中...</span>
+                        </span>
+                        <a class="king-btn king-primary update-ben" id="updateBtn"><i class="iconfont icon-weibiaoti2"></i>刷新数据</a>
+                    </div>
+                </section>
+
+                <section class="main-list">
+                    <div class="panel panel-default">
+                        <div class="panel-heading panel-title" id="panelHeading">
+                            <table>
+                                <thead>
+                                    <tr class="list-row">
+                                        <td class="item-select-width panel-title-item"></td>
+                                        <td class="item-ip-width panel-title-item">主机名/IP</td>
+                                        <td class="item-status-width panel-title-item">状态</td>
+                                        <td class="item-alert-width panel-title-item">告警事件（今日）</td>
+                                        <td class="list-condition-width panel-title-item" data-type="condition" data-attr="cpu_usage">
+                                            <i class="iconfont icon-jiantou visibility-hidden"></i>CPU使用率
+                                        </td>
+##                                        <td class="list-condition-width panel-title-item" data-type="condition">
+##                                            <i class="iconfont icon-jiantou visibility-hidden"></i>磁盘使用量
+##                                        </td>
+                                        <td class="list-condition-width panel-title-item" data-type="condition" data-attr="io_util">
+                                            <i class="iconfont icon-jiantou visibility-hidden"></i>磁盘IO使用率
+                                        </td>
+                                        <td class="list-condition-width panel-title-item" data-type="condition" data-attr="cpu_load">
+                                            <i class="iconfont icon-jiantou visibility-hidden"></i>CPU5分钟负载
+                                        </td>
+##                                        <td class="components-service-width panel-title-item"></td>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                        <div class="panel-body panel-content" id="panelBody">
+                            <table>
+                                <tbody>
+                                    <!-- 页面首次打开 -->
+                                    <template v-if="first_open">
+                                    <tr>
+                                        <td colspan="9" class="no-data">
+
+                                        </td>
+                                    </tr>
+                                    </template>
+
+                                    <!-- 主机性能展示 -->
+                                    <template v-if="hosts.length > 0">
+                                        <template v-for="host in hosts">
+                                            <tr v-if="host.is_label" class="list-row list-group" data-type="group" data-status="{{host.label_status}}">
+                                                <td colspan="8" @click="toggle_group_hosts(host.group_val||'空')">
+                                                    <span class="group-expand" data-type="group-mark">{{host.label_icon_text}}</span>
+                                                    <span class="group-title">{{host.group_text + host.group_hosts.length + "台"}}</span>
+                                                </td>
+                                            </tr>
+                                            <tr v-else class="list-row" track-by="id" data-group="{{group_by}}" data-type="{{host.is_stickied?'isTop':''}}" @click="on_tr_click($event, host)">
+                                                <td class="item-select-width item-select">
+                                                    <span class="toTop {{host.is_stickied?'toped':''}}" data-type="toTop" data-toggle="tooltip" data-placement="top" @click="stick_icon_click($event, host)" @mouseenter="stick_tooltips($event)" @mouseleave="stick_tooltips_destroy($event)">
+                                                        <i class="iconfont icon-zhiding1"></i>
+                                                    </span>
+                                                    <input type="checkbox" name="item" v-model="host.checked" data-host_id="{{host.id}}">
+                                                </td>
+                                                <td class="item-ip-width item-ip">
+                                                    <a href="javascript:;">{{host.InnerIP}}</a>
+                                                </td>
+                                                <td class="item-status-width item-status">
+                                                    <span class="status {{status_class(host.status)}}"></span>
+                                                    {{host.status==0?"正常":host.status==2?"Agent未安装":host.status==3?"数据未上报":"未知"}}
+                                                </td>
+                                                <td class="item-alert-width item-alert">
+                                                    <span @mouseenter="alert_tooltips($event, host)" class="alert-event low" data-type="alert-tip" data-toggle="tooltip" data-placement="top">{{host.alarm.level[0]}}</span>
+                                                    <span @mouseenter="alert_tooltips($event, host)" class="alert-event middle" data-type="alert-tip" data-toggle="tooltip" data-placement="top">{{host.alarm.level[1]}}</span>
+                                                    <span @mouseenter="alert_tooltips($event, host)" class="alert-event high" data-type="alert-tip" data-toggle="tooltip" data-placement="top">{{host.alarm.level[2]}}</span>
+                                                </td>
+                                                <td class="list-condition-width list-condition">
+                                                    <div v-if="host.cpu_usage" class="item-chart" data-percent="{{host.cpu_usage.val.toFixed(2)}}" data-type="{{host.cpu_usage.val > 80 ? 'chart-error': 'chart-normal'}}" data-chart="pie" data-row="cpu">
+                                                        <span @mouseenter="show_cpu_single_usage($event, host)">{{host.cpu_usage.val.toFixed(2) + host.cpu_usage.unit}}</span>
+                                                    </div>
+                                                    <span v-else>
+                                                        无查询数据
+                                                    </span>
+                                                </td>
+##                                                <td class="list-condition-width list-condition">
+##                                                    <div class="item-chart" data-percent="76" data-type="chart-normal" data-chart="pie">
+##                                                        <span>76%</span>
+##                                                    </div>
+##                                                </td>
+                                                <td class="list-condition-width list-condition">
+                                                    <div v-if="host.io_util" class="item-chart" data-percent="{{host.io_util.val.toFixed(2)}}" data-type="{{host.io_util.val > 80 ? 'chart-error': 'chart-normal'}}" data-chart="pie">
+                                                        <span>{{host.io_util.val.toFixed(2) + host.io_util.unit}}</span>
+                                                    </div>
+                                                    <span v-else>
+                                                        无查询数据
+                                                    </span>
+                                                </td>
+                                                <td class="list-condition-width list-condition">
+                                                    <span v-if="host.cpu_load">
+                                                        {{host.cpu_load.val.toFixed(2)}}
+                                                    </span>
+                                                    <span v-else>
+                                                        无查询数据
+                                                    </span>
+                                                </td>
+##                                                <td class="components-service-width components-service">
+##                                                    <span v-for="c in host.component" class="component-item {{status_class(c.status)}}">{{c.name}}</span>
+##                                                </td>
+                                            </tr>
+                                        </template>
+                                    </template>
+
+                                    <!-- 无数据展示 -->
+                                    <template v-if="hosts.length == 0 && !first_open">
+                                    <tr>
+                                        <td colspan="9" class="no-data">
+                                            无查询数据
+                                        </td>
+                                    </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                            <div class="loading hidden" id="hosts_table_loading">
+                                <div class="loading-wrapper">
+                                    <img alt="loadding" src="${STATIC_URL}img/hourglass_36.gif">
+                                    刷新中，请稍等
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-footer panel-bottom clearfix" id="hosts-paging-footer">
+
+                        </div>
+                    </div>
+                </section>
+
+                <section class="side-content-wrapper hidden" id="sideContent" data-type="close" style="z-index: 2;">
+                    <div class="side-content">
+                        <div class="single-detail hidden" id="single">
+                            <!-- 主机信息 -->
+                            <div class="mainframe-info info-item">
+                                <p class="title">
+                                    <i class="iconfont icon-zhujixinxi"></i>
+                                    主机信息
+                                </p>
+                                <div class="detail">
+                                    <div class="row">
+                                        <div class="col-sm-4">
+                                            <span class="sub-title">主机名：</span>
+                                            <span class="sub-content">{{checked_host?checked_host.HostName || "空":""}}</span>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <span class="sub-title">内网IP：</span>
+                                            <span class="sub-content">{{checked_host?checked_host.InnerIP || "空":""}}</span>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <span class="sub-title">外网IP：</span>
+                                            <span class="sub-content">{{checked_host?checked_host.OuterIP || "空":""}}</span>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-4">
+                                            <span class="sub-title">所属集群：</span>
+                                            <span class="sub-content">{{checked_host?checked_host.SetName || "空":""}}</span>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <span class="sub-title">所属模块：</span>
+                                            <span class="sub-content">{{checked_host?checked_host.ModuleName || "空":""}}</span>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <span class="sub-title">机房城市：</span>
+                                            <span class="sub-content">{{checked_host?checked_host.Region || "空":""}}</span>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-4">
+                                            <span class="sub-title">Agent状态：</span>
+                                            <span class='sub-content {{checked_host?(checked_host.agent_status==0?"on":"off"):""}}'>{{{agent_status_display}}}</span>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <span class="sub-title">OS类型：</span>
+                                            <span class="sub-content">{{checked_host?checked_host.OSName || "空":""}}</span>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <span class="sub-title">云区域：</span>
+                                            <span class="sub-content">{{plat_name_display}}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 监控服务视图 -->
+                            <div class="monitor-info info-item">
+                                <div class="clearfix">
+                                    <div class="title pull-left">
+                                        <i class="iconfont icon-shitu"></i>
+                                        监控服务视图
+                                    </div>
+                                    <div class="date-select pull-right mt15">
+                                        查看日期：
+                                        <input type="text" class="form-control time-picker" id="single_graph_date" placeholder="选择日期...">
+                                    </div>
+                                </div>
+
+							<div class="selector-options" id="monitorSelector">
+								<span class="option normal selected" @click="on_component_span_click($event, checked_host)">System</span>
+                                <template v-if="checked_host && checked_host.component">
+                                <span v-for="c in checked_host.component" class="option {{status_class(c.status)}}" @click="on_component_span_click($event, checked_host)">{{c.name}}</span>
+                                </template>
+							</div>
+
+                                <div class="monitor-chart">
+                                    <div class="row">
+                                        <template v-for="host_index in checked_host_index_table">
+                                        <div class="col-sm-6 mb20 single-contain">
+                                            <div class="chart-item">
+                                                <p class="sub-title">{{host_index.description + " "+ host_index.dimension_field_value}}</p>
+                                                <div class="line-chart" data-index_id="{{host_index.index_id}}" data-dimension_field_value="{{host_index.dimension_field_value}}"></div>
+                                            </div>
+                                        </div>
+                                        </template>
+                                    </div>
+                                    <div class="paging-wrapper clearfix" id="single_graph_paging_footer">
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 关联监控策略 -->
+                            <div class="relevant-monitor-info info-item">
+                                <p class="title">
+                                    <i class="iconfont icon-celve"></i>
+                                    关联告警策略
+                                </p>
+                                <div class="detail">
+                                    <table class="table table-header-bg table-bordered mb0">
+                                        <thead>
+                                            <tr>
+                                                <td>监控指标</td>
+                                                <td>算法</td>
+                                                <td>告警级别</td>
+                                                <td>告警条件</td>
+                                                <td>处理动作</td>
+                                                <td>操作</td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template v-if="checked_host_alarm_strategy_table.length>0">
+                                            <template v-for="strategy in checked_host_alarm_strategy_table">
+                                                <tr data-id="{{strategy.id}}">
+                                                    <td>{{strategy.monitor_field}}</td>
+                                                    <td>{{strategy.strategy_name}}</td>
+                                                    <td class="{{strategy.monitor_level_color}}">{{strategy.monitor_level_name}}</td>
+                                                    <td class="ellipsis-data">{{{strategy.strategy_desc}}}</td>
+                                                    <td>{{strategy.solution_name}}</td>
+                                                    <td class="operation">
+##                                                        <div class="switch switch-mini mr10" data-on="success" data-on-label="ON" data-off-label="OFF">
+                                                            <input v-model="strategy.is_enabled" type="checkbox" name="status"/>
+##                                                        </div>
+                                                        <i class="iconfont icon-bianji edit" @click="add_alarm_strategy($event, strategy)"></i>
+                                                        <i class="iconfont icon-guanbi delete" @click="del_alarm_strategy($event, strategy)"></i>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </template>
+                                        <template v-if="checked_host_alarm_strategy_table.length==0">
+                                            <tr>
+                                                <td colspan="9" class="no-data">
+                                                    无查询数据
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                    <div class="loading hidden" id="alarms_strategy_table_loading">
+                                        <div class="loading-wrapper">
+                                            <img alt="loadding" src="${STATIC_URL}img/hourglass_36.gif">
+                                            刷新中，请稍等
+                                        </div>
+                                    </div>
+                                    <div class="paging-wrapper clearfix" id="alarm_strategy_paging_footer">
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 关联告警事件 -->
+                            <div class="relevant-alert-info info-item">
+                                <div class="clearfix">
+                                    <div class="title pull-left mr5">
+                                        <i class="iconfont icon-gaojingshijian"></i>
+                                        关联告警事件
+                                    </div>
+                                    <div class="title-badges pull-left">
+                                        <span class="title-badge slight" @click="alarm_filter($event, 3)" attr-level="3">轻微警告:{{checked_host_alarms_count_info[3]}}</span>
+                                        <span class="title-badge normal" @click="alarm_filter($event, 2)" attr-level="2">普通警告:{{checked_host_alarms_count_info[2]}}</span>
+                                        <span class="title-badge serious" @click="alarm_filter($event, 1)" attr-level="1">严重警告:{{checked_host_alarms_count_info[1]}}</span>
+                                    </div>
+                                    <div class="date-select pull-right">
+                                        查看日期：
+                                        <input type="text" class="form-control time-picker" id="alarm_date" placeholder="选择日期...">
+                                    </div>
+                                </div>
+
+                                <div class="detail">
+                                    <table class="table table-header-bg table-bordered mb0">
+                                        <thead>
+                                            <tr>
+                                                <td>告警时间</td>
+                                                <td>监控指标</td>
+                                                <td>级别</td>
+                                                <td class="alert-condition">告警内容</td>
+                                                <td>操作</td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template v-if="checked_host_alarms_table.length>0">
+                                                <template v-for="alarm in checked_host_alarms_table">
+                                                    <tr>
+                                                        <td>{{alarm.source_time.split(" ")[1]}}</td>
+                                                        <td>{{alarm.monitor_field_show_name}}</td>
+                                                        <td class="{{alarm.level_class}}">{{alarm.level_display}}</td>
+                                                        <td class="alert-condition">
+                                                            <p>维度信息：{{alarm.dimensions_display}}</p>
+                                                            <p>{{alarm.raw}}</p>
+                                                        </td>
+                                                        <td>
+                                                            {{{alarm.status_html}}}
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                            </template>
+                                            <template v-if="checked_host_alarms_table.length==0">
+                                                <tr>
+                                                    <td colspan="9" class="no-data">
+                                                        无查询数据
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                    <div class="loading hidden" id="alarms_table_loading">
+                                        <div class="loading-wrapper">
+                                            <img alt="loadding" src="${STATIC_URL}img/hourglass_36.gif">
+                                            刷新中，请稍等
+                                        </div>
+                                    </div>
+                                    <div class="paging-wrapper clearfix" id="alarms-paging-footer">
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 机器多选 -->
+                        <div class="multiple-detail hidden" id="multiple">
+                            <!-- 指标选择 -->
+                            <div class="indicator-selector info-item">
+                                <p class="title">
+                                    <i class="iconfont icon-zhujixinxi"></i>
+                                    指标选择
+                                </p>
+                                <div class="detail" id="selectors">
+                                    <template v-for="(category, host_index_list) in host_index_info">
+                                    <div class="selector-row clearfix">
+                                        <span class="sub-title pull-left">{{category}}指标：</span>
+                                        <div class="sub-detail pull-left">
+                                            <a v-for="host_index in host_index_list" href="###" class="king-btn" data-index_id="{{host_index.index_id}}" @click="host_index_selected($event.target)">{{host_index.description}}</a>
+                                        </div>
+                                    </div>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <!-- 监控服务视图 -->
+                            <div class="monitor-view info-item">
+                                <div class="clearfix">
+                                    <div class="title pull-left">
+                                        <i class="iconfont icon-shitu"></i>
+                                        监控服务视图
+                                    </div>
+                                    <div class="date-select pull-right">
+                                        查看日期：
+                                        <input type="text" class="form-control time-picker" id="multiple_graph_date" placeholder="选择日期...">
+##                                        <button type="button" class="king-btn king-primary king-btn-small save-as">
+##                                            <i class="iconfont icon-lingcun"></i>
+##                                            另存为
+##                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="monitor-chart">
+                                    <div class="row">
+                                        <template v-for="host_index in multiple_host_index_table" track-by="$index">
+                                        <div class="col-sm-6 mb20 multiple-contain">
+                                            <div class="chart-item">
+                                                <p class="sub-title">{{"【" + host_index.host_ip +"】"+ host_index.description + " "+ host_index.dimension_field_value}}</p>
+                                                <div class="line-chart" data-index_id="{{host_index.index_id}}" data-dimension_field_value="{{host_index.dimension_field_value}}" data-host_id="{{host_index.host_id}}"></div>
+                                            </div>
+                                        </div>
+                                        </template>
+                                    </div>
+                                    <div class="paging-wrapper clearfix" id="multiple_graph_paging_footer">
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="close-btn" id="close" data-type="close">关闭</div>
+                </section>
+            </article>
+            <script>
+                <%
+                    import json
+                %>
+                count_per_page = ${count_per_page};
+                run_mode = "${RUN_MODE}";
+                run_init = true;
+                plat_info = ${json.dumps(plat_info)};
+                checkhost_id = '${checkhost_id}';
+            </script>
+</%block>
+
+<%block name="script">
+    <link href="${STATIC_URL}assets/kendoui-2015.2.624/styles/kendo.common.min.css" rel="stylesheet">
+    <link href="${STATIC_URL}assets/kendoui-2015.2.624/styles/kendo.default.min.css" rel="stylesheet">
+    <link href="${STATIC_URL}assets/bootstrap-switch-1.2/bootstrapSwitch.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="${STATIC_URL}alert/css/performanceV2/icheck/minimal/blue.css">
+    <link rel="stylesheet" type="text/css" href="${STATIC_URL}alert/css/performanceV2/style.css">
+    <link href="${STATIC_URL}assets/switchery-master/dist/switchery.css" rel="stylesheet">
+    <script src="${STATIC_URL}assets/icheck-1.x/icheck.min.js"></script>
+    <script src="${STATIC_URL}assets/easyPieChart-2.1.7/jquery.easypiechart.min.js"></script>
+    <script src="${STATIC_URL}assets/kendoui-2015.2.624/js/kendo.all.min.js"></script>
+    <script src="${STATIC_URL}assets/highcharts-4.1.7/js/highcharts.js"></script>
+    <script src="${STATIC_URL}assets/highcharts-4.1.7/js/highcharts-more.js"></script>
+    <script src="${STATIC_URL}assets/bootstrap-switch-1.2/bootstrapSwitch.js"></script>
+    <script src="${STATIC_URL}assets/switchery-master/dist/switchery.js"></script>
+    <script src="${STATIC_URL}alert/js/performanceV2/index.js?v=${STATIC_VERSION}"></script>
+    <script src="${STATIC_URL}alert/js/alarm_strategy.js?v=${STATIC_VERSION}"></script>
+    <script src="${STATIC_URL}alert/js/dataview/graph-highcharts.js"></script>
+    <script src="${STATIC_URL}alert/js/performanceV2/performance.js?v=${STATIC_VERSION}"></script>
+
+</%block>

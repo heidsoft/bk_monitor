@@ -1,0 +1,186 @@
+<!-- 监控源 -->
+<label class="col-sm-2 control-label">
+	<img alt="loadding" id="data_table_loadding" style="margin-top:-2px;" src="${STATIC_URL}img/loading_2_16x16.gif">
+    监控源<span class="required"></span>
+</label>
+<div class="col-sm-4">
+	<input id="data_table" class="select2 form-control not_empty_select not_edit" value="${monitor.monitor_source["id"] if monitor else ''}">
+</div>
+% if not monitor:
+<!--      数据平台添加数据                            -->
+<div class="inline-block">
+    <a href="###" onclick="refresh_data_table('')" class="king-btn-demo king-btn king-btn-icon king-radius king-default" title="刷新监控源"><i class="fa fa-refresh"></i></a>
+	<a class="king-btn-demo king-btn king-default" title="新增监控源" href="${SITE_URL}${cc_biz_id}/datasource/" style="width: 90px"><i class="fa fa-plus"></i> 新增监控源</a>
+</div>
+% endif
+<span id="tip_data_table" class="tips error"></span>
+<script>
+// 获取所有数据平台结果表
+// TODO result_table_list 是否为 []
+function get_result_table(){
+    var group_data = [];
+    $.ajax({
+        url: site_url+"api/trt/list_result_table_detail/",
+        dataType: "json",
+        data: {
+            biz_id: cc_biz_id,
+            result_table_list: [],
+        },
+        success: function(result){
+            if (result.result){
+                var data = [];
+                $.each(result.data, function (index, value) {
+                    if (value["storages"] != "es"){
+                        if (value["description"]){
+                            var text = value["id"] + "(" + value["description"] + ")";
+                        } else {
+                            var text = value["id"]
+                        }
+                        data.push({
+                            "id": value["id"],
+                            "type": "trt",
+                            "detail": JSON.stringify(value),
+                            "text": text
+                        });
+                    }
+                })
+            }
+            else {
+                var data = [{"id": "", "text": "获取结果表失败:"+result.message}]
+            }
+            group_data.push({"text":"", "children":[]});
+            if (group_data.length > 1){
+                $("#data_table").select2({data:group_data, dropdownAutoWidth:"true"});
+                $("#data_table_loadding").hide();
+            }
+        },
+    })
+    $.ajax({
+        url: site_url+"api/trt/list_datasets/",
+        dataType: "json",
+        data: {
+            biz_id: cc_biz_id,
+            set_type: "biz",
+        },
+        success: function(result){
+            if (result.result){
+                var data = [];
+                $.each(result.data, function (index, value) {
+                    if (value["data_src_item"] != "sys_res"){
+                        // 去除基础告警和基础性能告警数据源
+                        if (value["data_desc"]){
+                            var text = "【" + value["data_id"] + "】" + value["data_set"] + "(" + value["data_desc"] + ")";
+                        } else {
+                            var text = "【" + value["data_id"] + "】" + value["data_set"]
+                        }
+                        data.push({
+                            "id": value["data_id"],
+                            "type": "dataset",
+                            "text": text,
+                            "dataset": value["data_set"],
+                            "data_format": value["data_format_id"],
+                        });
+                    }
+                })
+            }
+            else {
+                var data = [{"id": "", "text": "获取源数据失败:"+result.message}]
+            }
+            group_data.push({"text":"源数据", "children":data});
+            if (group_data.length > 1){
+                // group_data = [group_data[1], group_data[0]];
+                var new_group_data = new Array();
+                if(group_data[1].children.length > 0){
+                	new_group_data.push(group_data[1]);
+                }
+                if(group_data[0].children.length > 0){
+                	new_group_data.push(group_data[0]);
+                }
+                if(new_group_data.length == 0){
+                	new_group_data.push({"text":"无数据", "children":data})
+                }
+                $("#data_table").select2({data:new_group_data, dropdownAutoWidth:"true"});
+                $("#data_table_loadding").hide();
+            }
+        },
+    })
+}
+// 初始化数据平台数据结果表的监控配置
+function show_field_by_result_table(){
+    if ($("#data_table").val()== ''){ return }
+    var data = JSON.parse($("#data_table").select2("data").detail);
+    dimension_data = [];
+    var dimension_data_value = [];
+    var monitor_data = [];
+    var count_method = {};
+    $.each(data.fields, function (index, value) {
+        // 监控字段
+        if(!value["is_dimension"] && value["field"] != "timestamp" && value["field"] != "offset"){
+            if (value["description"]){
+                var text = value["field"] + "(" + value["description"] + ")";
+            } else {
+                var text = value["field"]
+            }
+            monitor_data.push({"id": value["field"], text: text});
+            
+            count_method[value["field"]] = value["processor"];
+        // 维度字段
+        } else if (value["is_dimension"]){
+        	if (value["description"]){
+                var text = value["field"] + "(" + value["description"] + ")";
+            } else {
+                var text = value["field"]
+            }
+            dimension_data.push({id: value["field"], text: text});
+            dimension_data_value.push(value["field"]);
+        }
+    });
+    // 维度字段
+    $("#dimension_field").select2({data:dimension_data, multiple:true});
+    $("#dimension_field").select2("val", dimension_data_value).trigger("change");
+    $("#dimension_field").attr("readonly", "readonly")
+    // 监控字段
+    $("#monitor_field").select2({data:monitor_data, dropdownAutoWidth:"true"});
+    $("#monitor_field").select2("val", null).change(function(e){
+        $("#count_method").select2("val", count_method[$("#monitor_field").select2("val")]);
+    });
+    // 统计方式
+    $("#count_method").attr("disabled", "disabled");
+    // 统计周期
+    $("#count_freq_group").select2("val", data.count_freq);
+    $("#count_freq_group").attr("disabled", "disabled");
+    // 把监控字段添加到维度字段方便策略参数配置使用
+    for (var i = 1; i < monitor_data.length; i ++){
+        dimension_data.push(monitor_data[i]);
+    }
+    // BKSQL 可用字段 
+    // set_bksql_dimension();
+}
+
+// 初始化数据平台数据的监控配置
+function change_data_table(){
+    $(".group-dataset").hide();
+    $("#monitor_field").select2({data:[{"id": "", "text": "数据加载中"}], dropdownAutoWidth:"true"});
+    $("#dimension_field").select2({data:[], multiple:true, dropdownAutoWidth:"true"})
+    $("#dimension_field").select2("val", null);
+    $("#dimension_field").removeAttr("readonly");
+    $("#count_method").removeAttr("disabled");
+    $("#count_freq_group").removeAttr("disabled");
+    if ($("#data_table").select2("data") && ($("#data_table").select2("data").type == "trt")){
+        show_field_by_result_table();
+        // 选择结果表时，提示信息
+        $("#data_table_help").text('监控源为【统计结果表】时，则不支持再做统计');
+    } else {
+    	 $("#data_table_help").text('');
+        var field_list = [
+            {"id": "time_field", "type": "dimension", is_multiple: false},
+            {"id": "dimension_field", "type": "dimension", is_multiple: true},
+            {"id": "monitor_field", "type": "value", is_multiple: false}
+        ]
+        show_field_by_dataset(field_list);
+    }
+    // bksql_show_change();
+}
+// 监控源、监控指标 后台数据渲染
+$("#data_table").on("change", function(){change_data_table();})
+</script>

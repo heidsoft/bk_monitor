@@ -1,0 +1,279 @@
+.monitor-popup {
+    z-index: 200;
+  position: absolute;
+  top: -15px;
+  left: 0;
+  right: 0;
+  min-height: 100%;
+  /*background-color: rgba(0, 0, 0, 0.7); */}
+  .monitor-popup .monitor-popup-wrapper {
+    position: relative;
+    width: 80%;
+    margin: 30px auto;
+    z-index: 10; }
+  .monitor-popup .config__panelContent {
+    padding: 20px; }
+  .monitor-popup .monitor-chart {
+    position: relative;
+    height: 300px;
+    border: 1px solid #ddd; }
+  .monitor-popup .tool-field {
+    width: 80px; }
+  .monitor-popup .config__input {
+    vertical-align: middle;
+    margin-left: -5px; }
+  .monitor-popup .tool-search {
+    margin-left: 10px; }
+  .monitor-popup .tool-date {
+    width: 160px; }
+  .monitor-popup .tool-dimension {
+    height: 30px;
+    background-color: #fafafa;
+    border-color: #e1e1e1;
+    margin-right: 10px;
+    font-size: 14px; }
+    .monitor-popup .tool-dimension label {
+      cursor: pointer; }
+    .monitor-popup .tool-dimension input {
+      margin: 0;
+      vertical-align: middle; }
+  .monitor-popup .monitor-list-content {
+    position: relative; }
+    .monitor-popup .monitor-list-content thead th {
+      text-align: center;
+      padding-right: 8px; }
+    .monitor-popup .monitor-list-content tbody tr td:last-child a {
+      width: 50%; }
+    .monitor-popup .monitor-list-content tbody tr td:last-child:before, .monitor-popup .monitor-list-content tbody tr td:last-child:after {
+      content: '';
+      display: table;
+      line-height: 0; }
+    .monitor-popup .monitor-list-content tbody tr td:last-child:after {
+      clear: both; }
+
+.loading {
+  z-index: 4; }
+  .loading .loading-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+        -ms-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold; }
+
+
+  /* detail */
+.detail-row, .detail-row .detail-left, .detail-row .detail-right {
+  *zoom: 1; }
+  .detail-row:before, .detail-row .detail-left:before, .detail-row .detail-right:before, .detail-row:after, .detail-row .detail-left:after, .detail-row .detail-right:after {
+    content: "";
+    display: table;
+    line-height: 0; }
+  .detail-row:after, .detail-row .detail-left:after, .detail-row .detail-right:after {
+    clear: both; }
+
+.lh-30 {
+  line-height: 30px; }
+
+.h-30 {
+  height: 30px; }
+
+.pre-span {
+  display: inline-block;
+  width: 67px;
+  height: 30px;
+  line-height: 30px;
+  margin-right: -6px;
+  vertical-align: middle;
+  text-align: center;
+  color: #fff;
+  background-color: #cdcfd4;
+  font-size: 14px; }
+
+.strategy_desc{
+    background-color: #ccc;
+    padding: 3px;
+    border-radius: 5px;
+    color: #fff;
+}
+
+.strategy-detail {
+  background-color: #fafafa;
+  border-bottom: 1px solid #e5e5e5; }
+
+.alert-event table thead td {
+  background-color: #fcfcfc;
+  font-size: 14px;
+  color: #666;
+  font-weight: bold; }
+.alert-event table .alert-condition {
+  width: 60%;
+  text-align: left;
+  padding: 10px 20px; }
+  .alert-event table .alert-condition p {
+    margin: 0; }
+.alert-event table .alerted {
+  color: #24c36f; }
+.alert-event table .not-alerted {
+  color: #ffc600; }
+
+.detail-row {
+  padding-bottom: 30px; }
+  .detail-row .detail-left {
+    float: left;
+    width: 50%; }
+  .detail-row .detail-right {
+    float: right; }
+  .detail-row .subtitle, .detail-row .subcontent {
+    float: left;
+    font-size: 14px; }
+  .detail-row .subtitle {
+    width: 100px;
+    text-align: right;
+    color: #666; }
+  .detail-row .subcontent {
+    width: calc(100% - 100px);
+    padding-left: 25px;
+    color: #999;
+    letter-spacing: 1px; }
+    .detail-row .subcontent .side-select,
+    .detail-row .subcontent .alert__input {
+      width: 140px; }
+  .detail-row .sideContent-role {
+    float: left;
+    height: 30px;
+    line-height: 30px;
+    padding: 0 10px;
+    margin: 0 5px 0 0;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    color: #999; }
+  .detail-row .text-muted {
+    color: #999;
+    font-weight: bold; }
+    .detail-row .text-info {
+    color: #4A9BFF;
+    font-weight: bold; }
+      .detail-row .text-danger {
+    color: #d26a5c;
+    font-weight: bold; }
+
+      /* modify*/
+.modify .side-content {
+  padding: 15px;
+}
+.modify .alert-title .config__panelTitle {
+  width: 100px;
+}
+.modify .alert-title .config__panelTool {
+  width: calc(100% - 100px);
+  padding: 0 0 0 18px;
+  border: none;
+  cursor: initial;
+}
+.modify .alert-title input {
+  width: 100%;
+  height: calc(100% - 2px);
+  padding-left: 10px;
+  border: none;
+  border-left: 1px solid #ddd;
+  outline: none;
+}
+.modify .pre-span {
+  background-color: #b2c0ca;
+}
+.modify .subcontent + .subcontent {
+  margin: 15px 0 0 100px;
+}
+.modify .config__inputItem {
+  margin: 5px 0 0 0;
+}
+.modify .config__subRowContent {
+  padding: 20px 0 0;
+}
+.modify .config__subRowContent p:last-child {
+  margin: 0;
+}
+.modify .config__subRowContent .config__preLabel {
+  display: table;
+  width: 710px;
+  height: 90px;
+  border: 1px solid #ccc;
+  text-align: center;
+  letter-spacing: 2px;
+}
+.modify .config__subRowContent .config__preLabel:before {
+  display: table-cell;
+  width: 20px;
+  padding: 0 8px;
+  background-color: #b2c0ca;
+  color: #fff;
+  vertical-align: middle;
+}
+.modify .config__subRowContent-title {
+  color: #666;
+}
+.modify .config__subRowContent-item .inner-select {
+  width: 110px;
+  line-height: 30px;
+  height: 30px;
+  vertical-align: middle;
+}
+.modify .config__subRowContent-item .inner-input {
+  width: 110px;
+  line-height: 30px;
+  height: 30px;
+  vertical-align: middle;
+  border: 1px solid #ccc;
+  padding: 0 10px;
+  box-shadow: none;
+}
+.modify .config__subRowContent-item .inner-input-sm {
+  width: 60px;
+  line-height: 30px;
+  height: 30px;
+  vertical-align: middle;
+  border: 1px solid #ccc;
+  padding: 0 10px;
+  box-shadow: none;
+}
+
+.modify .detail-row:last-child {
+  padding-bottom: 0;
+}
+.modify .config__panelLabel {
+  min-width: 100px !important;
+  letter-spacing: 0 !important;
+}
+.modify .config__rowContent {
+  margin-left: 25px !important;
+}
+
+.operator-row {
+  letter-spacing: -4px;
+}
+
+.new-operator {
+  cursor: pointer;
+  vertical-align: sub;
+}
+.new-operator i {
+  font-size: 22px;
+  margin-right: 10px;
+}
+
+.new-delete {
+  color: #ff6666;
+}
+
+.new-add {
+  color: #00cc66;
+}
+
+.logic{
+  width: 70px;
+  margin-right: -6px;
+}

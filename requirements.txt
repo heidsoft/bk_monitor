@@ -1,0 +1,38 @@
+# -*- coding: utf-8 -*-
+# 工程预装模块
+# 需要额外的python包，可直接在文件后面添加
+# 请确保指定的包和版本号，可通过pip安装
+
+Django==1.8.11
+PyMySQL==0.6.7
+requests==2.9.1
+celery==3.1.18
+kombu==3.0.35
+django-celery==3.1.16
+redis==2.10.5
+httplib2==0.9.1
+xlrd==1.0.0
+xlwt==1.1.2
+Mako==1.0.4
+Jinja2==2.8
+MarkupSafe==0.23
+meld3==1.0.2
+pbr==1.10.0
+pycrypto==2.6.1
+pytz==2016.6.1
+gunicorn==19.6.0
+six==1.10.0
+SQLAlchemy==1.0.12
+stevedore==1.17.1
+suds==0.4
+supervisor==3.3.1
+urllib3==1.16
+#uWSGI==2.0.13.1
+virtualenv==15.0.3
+virtualenv-clone==0.2.6
+virtualenvwrapper==4.7.1
+amqp==1.4.9
+anyjson==0.3.3
+billiard==3.3.0.23
+requests==2.9.1
+arrow==0.5.4

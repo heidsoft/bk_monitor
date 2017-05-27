@@ -1,0 +1,339 @@
+<%inherit file="/monitor/base_new.html"/>
+<%block name="css">
+<link href="${STATIC_URL}alert/css/index.css" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="${STATIC_URL}alert/css/overview/css/iconfont.css">
+<link rel="stylesheet" type="text/css" href="${STATIC_URL}alert/css/overview/css/new.css?v=1">
+</%block>
+
+<%block name="content">
+<div class="iframe-mask hidden"></div>
+<style>
+    .star-chart-panel{
+        min-height: 850px;
+    }
+    .portlet-header{
+        cursor:auto;
+        position: relative;
+    }
+.chart-add > a {
+    color: #5C90D2;
+    cursor: pointer;
+}
+.chart-add {
+    line-height: 220px;
+    font-size: 120px;
+    color: black;
+}
+    button.favorite > i.fa-star{
+        color: #999;
+    }
+    button.active > i.fa-star{
+        color:#E6A20C;
+    }
+    button.hover > i.fa-star{
+        color:#E6A20C;
+    }
+    .highcharts-tooltip span {
+        height:auto;
+        min-width:180px;
+        max-width:250px;
+        overflow:auto;
+        white-space:normal !important; // add this line...
+    }
+.king-btn.king-disabled {
+    cursor: not-allowed;
+}
+.event-danger {
+    background-color: #d26a5c;
+}
+.event-warning {
+    background-color: #4a9bff;
+}
+.event-info {
+    background-color: #888686;
+}
+</style>
+
+
+    <article class="new-content clearfix">
+            <section class="new-chart pull-left">
+                <div class="show-contents clearfix">
+                    <div class="show-content-block pull-left mainframe-monitor clearfix">
+                        <div class="left-title pull-left">
+                            <div class="left-title-inside">
+                                <i class="iconfont icon-weibiaoti1-1"></i>
+                                <p class="name">主机监控</p>
+                            </div>
+                        </div>
+                        <div class="right-content pull-right">
+                            <p class="total"><span id="host_num"></span>台</p>
+                            <div class="buttons-block">
+                                <div class="buttons-block-wrapper" style=''>
+                                    <p class="button-row hide" id="no_agent_display">
+                                        <a class="king-btn new-btn error" title="未安装Agent" id="agentBtn" target="_blank" href="${AGENT_SETUP_URL}">
+                                            <span id="no_agent_num"></span>台未安装Agent
+                                        </a>
+                                    </p>
+                                    <p class="button-row hide" id="silent_agent_display">
+                                        <a class="king-btn new-btn" title="未上传数据" id="uploadData" href="${SITE_URL}${cc_biz_id}/bp/?status=1/">
+                                            <span id="silent_agent_num"></span>台未上报数据
+                                        </a>
+                                    </p>
+                                    <p class="button-row hide" id="perfect_agent_display">
+                                        <a class="king-btn new-btn success-btn" title="">太棒了，您的主机都接入监控了</a>
+                                    </p>
+                                    <p class="button-row hide" id="goto_cc_display">
+                                        <a class="king-btn king-round new-btn" target="_blank" href="${AGENT_SETUP_URL}">快速部署</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="show-content-block pull-left custom-monitor">
+                        <div class="left-title pull-left">
+                            <div class="left-title-inside">
+                                <i class="iconfont icon-weibiaoti-1"></i>
+                                <p class="name">自定义监控</p>
+                            </div>
+                        </div>
+                        <div class="right-content pull-right">
+                            <p class="total"><span id="custom_monitor_num"></span>项</p>
+                            <div class="buttons-block">
+                                <div class="buttons-block-wrapper">
+                                    <p class="button-row">
+                                        <a class="king-btn king-round new-btn" href="${SITE_URL}${cc_biz_id}/operation_monitor/" id="checkDetail"></a>
+                                    </p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="show-chart">
+                    <div class="show-chart-header clearfix" id="chart_header">
+                        <span class="title">最近{{ days }}天告警数量统计</span>
+                        <div class="tool pull-right" id="headerMenu">
+                            <img src="${STATIC_URL}alert/img/menu.png">
+                            <div class="menu">
+                                <ul>
+                                    <li><a href="###" v-on:click="reload_chart" data-days="3">最近3天</a></li>
+                                    <li><a href="###" v-on:click="reload_chart" data-days="7">最近7天</a></li>
+                                    <li><a href="###" v-on:click="reload_chart" data-days="30">最近30天</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="show-chart-content" style="position:relative;">
+                        <div class="main-chart" id="chart"></div>
+                        <!-- 加载遮罩 -->
+                        <div class="loading hide" id="chartLoading">
+                            <div class="loading-content">
+                                <img alt="loadding" src="${STATIC_URL}img/hourglass_36.gif">
+                                加载中，请稍等
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section class="new-list pull-right">
+                <div class="tab-box" id="alert-list">
+                    <ul class="nav nav-tabs king-nav-tabs2 king-tab-info">
+                        <li class="active">
+                            <a href="#recentAlert" data-toggle="tab">近期告警事件</a>
+                        </li>
+                        <li>
+                            <a href="#alwaysAlert" data-toggle="tab">最近频繁告警事件</a>
+                        </li>
+                        <li>
+                            <a href="#recentOperate" data-toggle="tab">最近操作事件</a>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane fade in active" id="recentAlert">
+                            <div class="scroll-list" data-type="scrollList">
+                                <ul class="recent-list">
+                                    <li class="empty-item hide">
+                                        近期没有告警事件发生
+                                    </li>
+                                   <template v-for="item in items">
+                                       <li>
+                                           <div class="alert-list-item">
+                                                <div class="item-content">
+                                                    <div class="emit clearfix item-{{ item.level | get_alarm_level_class }} item-title" title="">
+                                                        <a class="title pull-left" v-on:click="query_alarm_detail(item.id)">{{ item.alarm_content.title }}</a>
+                                                        <div class="time pull-right">{{ item.source_time | get_alarm_time_display }}</div>
+                                                    </div>
+                                                    <p v-if="item.alarm_content.is_performance_alarm" class="emit" title="">维度信息：{{ item.alarm_content.dimension }}</p>
+                                                    <p v-else class="emit" title="">告警对象：{{ item.alarm_content.source_name }}</p>
+                                                    <p class="emit" title="">告警内容：{{ item.alarm_content.content }}</p>
+                                                </div>
+                                            </div>
+                                       </li>
+                                    </template>
+                                </ul>
+                                <div class="button-row" v-if="has_more">
+                                    <button type="button" class="new-btn" v-on:click="load_more_data">查看更多</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="alwaysAlert">
+                            <div class="scroll-list" data-type="scrollList">
+                                <ul class="frequent-list">
+                                    <li class="empty-item hide">
+                                        最近没有频繁告警事件发生
+                                    </li>
+                                   <template v-for="item in items">
+                                       <li>
+                                        <div class="alert-list-item">
+                                            <div class="item-img">
+
+                                                <img v-if="item.strategy_type=='ip'" src="${STATIC_URL}alert/img/strategy_type_ip.png">
+                                                <img v-else src="${STATIC_URL}alert/img/strategy_type_strategy.png">
+                                            </div>
+                                            <div class="item-content">
+                                                <p class="emit">{{ item.strategy_type | get_strategy_type_display }}：
+                                                    <a v-if="item.strategy_type=='ip'" href="${SITE_URL}${cc_biz_id}/bp/?from_overview=1&alarm_strategy_id={{ item.alarm_strategy_id }}|{{ item.cc_plat_id }}">{{ item.title }}</a>
+                                                    <a v-else href="${SITE_URL}${cc_biz_id}/operation_monitor/?from_overview=1&alarm_strategy_id={{ item.alarm_strategy_id }}">{{ item.title }}</a>
+                                                </p>
+                                                <p class="emit">告警次数：<span class="delete">{{ item.cnt }}</span>次</p>
+                                            </div>
+                                        </div>
+                                       </li>
+                                    </template>
+                                </ul>
+                                <div class="button-row" v-if="has_more">
+                                    <button type="button" class="new-btn" v-on:click="load_more_data">查看更多</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="recentOperate">
+                            <div class="scroll-list" data-type="scrollList">
+                                <ul class="operate-list">
+                                    <li class="empty-item hide">
+                                        最近没有操作事件
+                                    </li>
+                                   <template v-for="item in items">
+                                        <li>
+                                            <div class="alert-list-item">
+                                                <div class="item-img" data-qq="{{ item.operator }}" data-name="{{ item.operator_name }}">
+                                                    <img v-bind:src="item.operator | get_qq_avatar_url">
+                                                </div>
+                                                <div class="item-content">
+                                                    <p class="emit">操作对象：{{ item.config_title }}</p>
+                                                    <p class="emit">操作类型：<span class="{{ item.operate }}">{{ item.operate | get_operate_display }}</span></p>
+                                                    <p class="emit">操作详情：{{{ item.operate_desc | get_operate_desc }}}</p>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </template>
+                                </ul>
+                                <div class="button-row" v-if="has_more" >
+                                    <button type="button" class="new-btn" v-on:click="load_more_data">查看更多</button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 加载遮罩 -->
+                        <div class="loading hide" id="listLoading">
+                            <div class="loading-content">
+                                <img alt="loadding" src="${STATIC_URL}img/hourglass_36.gif">
+                                加载中，请稍等
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+        </article>
+            <div class="king-time-bar in-overview">
+                <div class="time_selector ml15 mr0" style="width:150px;">
+
+                    <div class="input-group">
+                      <div class="input-group-addon"><i class="fa fa-calendar"></i></div>
+                      <input type="text" class="form-control daterangepicker_demo" id="daterangepicker" placeholder="选择日期...">
+                    </div>
+                </div>
+                <div class="king-num-bar timeline ui-selectable ml15 mr0" id="selectable">
+                    <div class="icon-time ui-selected">整天</div>
+                    <div class="timeblock  ui-selectee ui-selected" value="0">0</div>
+                    <div class="timeblock  ui-selectee ui-selected" value="1"></div>
+                    <div class="timeblock  ui-selectee ui-selected" value="2">2</div>
+                    <div class="timeblock  ui-selectee ui-selected" value="3"></div>
+                    <div class="timeblock  ui-selectee ui-selected" value="4">4</div>
+                    <div class="timeblock  ui-selectee ui-selected" value="5"></div>
+                    <div class="timeblock  ui-selectee ui-selected" value="6">6</div>
+                    <div class="timeblock  ui-selectee ui-selected" value="7"></div>
+                    <div class="timeblock  ui-selectee ui-selected" value="8">8</div>
+                    <div class="timeblock  ui-selectee ui-selected" value="9"></div>
+                    <div class="timeblock  ui-selectee ui-selected" value="10">10</div>
+                    <div class="timeblock  ui-selectee ui-selected" value="11"></div>
+                    <div class="timeblock  ui-selectee ui-selected" value="12">12</div>
+                    <div class="timeblock  ui-selectee ui-selected" value="13"></div>
+                    <div class="timeblock  ui-selectee ui-selected" value="14">14</div>
+                    <div class="timeblock  ui-selectee ui-selected" value="15"></div>
+                    <div class="timeblock  ui-selectee ui-selected" value="16">16</div>
+                    <div class="timeblock  ui-selectee ui-selected" value="17"></div>
+                    <div class="timeblock  ui-selectee ui-selected" value="18">18</div>
+                    <div class="timeblock  ui-selectee ui-selected" value="19"></div>
+                    <div class="timeblock  ui-selectee ui-selected" value="20">20</div>
+                    <div class="timeblock  ui-selectee ui-selected" value="21"></div>
+                    <div class="timeblock  ui-selectee ui-selected" value="22">22</div>
+                    <div class="timeblock  ui-selectee ui-selected" value="23"></div>
+                </div>
+            </div>
+	        <div class="panel panel-default">
+	            <div class="panel-heading panel-heading-fix">
+	                <div class="inline-block">
+	                    <span class="icon mr5"><i class="fa fa-star"></i></span>
+	                    <strong>关注指标</strong>
+	                </div>
+	                <div class="pull-right">
+	                    <div class="page-btn-group">
+	                        <a class="king-btn-demo king-btn king-btn-icon king-radius king-default mr15 page-refresh" title="刷新">
+	                             <i class="fa fa-refresh"></i>
+	                        </a>
+	                        <a class="king-btn-demo king-btn king-btn-icon king-radius king-default page-prev" title="上一页">
+	                            <i class="fa fa-angle-left"></i>
+	                        </a>
+	                        <a class="king-btn-demo king-btn king-btn-icon king-radius king-default page-next" title="下一页">
+	                             <i class="fa fa-angle-right"></i>
+	                        </a>
+	                    </div>
+	                </div>
+	            </div>
+	            <div class="panel-body star-chart-panel">
+	                <img alt="loadding" class="loading-img" src="${STATIC_URL}img/loading_2_36x36.gif">
+	            </div>
+	        </div>
+	<!-- /.row -->
+    <div class="modal fade" id="modal" role="dialog"> </div>
+</%block>
+
+<%block name="script">
+
+
+<script src="${STATIC_URL}assets/highcharts-4.1.7/js/highcharts.js"></script>
+<script src="${STATIC_URL}assets/highcharts-4.1.7/js/highcharts-more.js"></script>
+<!--时间选择器-->
+<link href="${STATIC_URL}assets/daterangepicker-2.0/css/daterangepicker.css" rel="stylesheet">
+<script src="${STATIC_URL}assets/daterangepicker-2.0/js/moment.js"></script>
+<script src="${STATIC_URL}assets/daterangepicker-2.0/js/daterangepicker.js"></script>
+<script type="text/javascript" src="${STATIC_URL}js/jquery-ui.min.js"></script>
+
+
+<script src="${STATIC_URL}alert/js/dataview/graph-highcharts.js"></script>
+<script src="${STATIC_URL}alert/js/overview/echarts-all.js"></script>
+<script src="${STATIC_URL}alert/js/dataview/dataview.js"></script>
+<script src="${STATIC_URL}alert/js/dataview/operation.js"></script>
+<script src="${STATIC_URL}alert/js/overview/overview.js"></script>
+<script src="${STATIC_URL}assets/mCustomScrollbar-3.0.9/jquery.mCustomScrollbar.concat.min.js"></script>
+<script src="${STATIC_URL}alert/js/overview/overview_new.js"></script>
+<!-- 包括所有kendoui的js插件或者可以根据需要使用的js插件调用　-->
+<link href="${STATIC_URL}assets/kendoui-2015.2.624/styles/kendo.common.min.css" rel="stylesheet">
+<link href="${STATIC_URL}assets/kendoui-2015.2.624/styles/kendo.default.min.css" rel="stylesheet">
+<script src="${STATIC_URL}assets/kendoui-2015.2.624/js/kendo.all.min.js"></script>
+<script>
+render_star_contains(1);
+init_top_time_bar();
+##get_now_health();
+</script>
+</%block>

@@ -1,0 +1,85 @@
+        <div class="modal-dialog fy-modal" role="document" style="width:600px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">添加${u"关注" if is_overview else u"监控视图"}</h4>
+                </div>
+                <form class="form-horizontal common-create-task" action="javascript:;">
+                    <div class="modal-body mt15">
+                        <div class="form-group">
+                            <label for="" class="col-sm-4 control-label">选择需要添加的监控</label>
+                            <div class="col-sm-8">
+                                <select name="monitor_id" style="width: 250px;" >
+                                    <option value="">请选择...</option>
+                                    %for menu_name, monitor_list in group_monitors:
+                                        <optgroup label="${menu_name}">
+                                            %for m in monitor_list:
+                                                <option value="${m.id}">${m.monitor_name}</option>
+                                            %endfor
+                                        </optgroup>
+                                    %endfor
+                                </select>
+                                %if not is_overview:
+                                <button class="king-btn king-success ml15" type="submit" id="add"><i class="fa fa-plus"></i> 新增监控</button>
+                                %else:
+                                <button class="king-btn king-success ml15" type="submit" id="overview_add"><i class="fa fa-plus"></i> 新增监控</button>
+                                %endif
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer text-center">
+                        <div class="col-sm-offset-3">
+                            <button class="king-btn king-primary ml15" type="submit" data-dismiss="modal" id="ok">确定</button>
+                            <button class="king-btn king-default ml15" type="button" data-dismiss="modal" id="cancel">取消</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+<script>
+
+
+%if redirect_url:
+    window.location.href="${redirect_url}";
+%endif
+
+    $("select[name=monitor_id]").select2();
+    $("select[name=monitor_id]").on("change", function(){
+        var monitor_id = $(this).val()
+        if(monitor_id){
+            $("#ok").prop('disabled', false)
+        } else {
+            $("#ok").prop('disabled', true)
+        }
+    })
+    $("select[name=monitor_id]").trigger("change")
+    $("#ok").on('click', function(e){
+        var monitor_id = $("select[name=monitor_id]").val();
+        $(".modal-footer #cancel").click();
+        if (!monitor_id){
+            return;
+        }
+        $.post(site_url+cc_biz_id+'/'+"operation/monitor/location/add/", {monitor_id: monitor_id, menu_id:menu_id}, function(res){
+            if (res.result){
+                add_graph_to_panel(res.data.html)
+            }else{
+                app_alert(res.message, "fail");
+            }
+        }, 'json');
+    });
+    $("#add").off("click").on("click", function(){
+        $(".modal-footer #cancel").click();
+        callback_code = 2;
+        setTimeout(function(){
+            open_div('${SITE_URL}${cc_biz_id}/config/custom/0/');
+        }, 500);
+
+        //openDetailIframe('${SITE_URL}${cc_biz_id}/config/custom/0/');
+    });
+    $("#overview_add").off("click").on("click", function(){
+        $(".modal-footer #cancel").click();
+        location.href = '${SITE_URL}${cc_biz_id}/operation_monitor/?overview=1&alarm_strategy_id=0';
+    });
+
+</script>

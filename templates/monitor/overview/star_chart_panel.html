@@ -1,0 +1,40 @@
+                    <div class="row" style="overflow:auto;">
+                        %for l in filter_loctaions:
+	                    <div class="col-xs-4 chart-one" data-monitor_backend_id="${l.monitor.backend_id}" data-monitor_id="${l.monitor.id}" data-system_menu="${l.menu.system_menu}" data-location_id="${l.id}" data-enabled="${1 if l.monitor.is_enabled else 0}">
+	                        <div class="panel panel-default">
+	                        <div class="panel-heading panel-heading-fix portlet-header">
+	                            <span class="chart-title" title="${l.monitor.monitor_name}">${l.monitor.monitor_name}</span>
+	                            <div class="pull-right warning-level">
+	                                <label class="label event-danger mr5" title="严重告警，点击查看告警列表">0</label>
+	                                <label class="label event-warning mr5" title="普通告警，点击查看告警列表">0</label>
+	                                <label class="label event-info mr5" title="轻微告警，点击查看告警列表">0</label>
+##                                    %if not l.monitor.star_required:
+                                    <button type="button" title="${u"取消关注" if l.monitor.favorite else u"关注"}" class="favorite ${"active" if l.monitor.favorite else ""}" style="background-color: #FAFAFA;border: none;">
+                                        <i class="fa fa-star"></i>
+                                    </button>
+##                                    %endif
+	                            </div>
+	                        </div>
+	                        <div class="charts-line-panel" style="height:250px;padding:10px;"></div>
+	                        </div>
+	                    </div>
+                        %endfor
+                        %if len(filter_loctaions) < num_per_page:
+	                    <div class="col-xs-4 chart-one-add">
+	                        <div class="panel panel-default">
+                                <div class="panel-heading panel-heading-fix portlet-header" style="text-align: center">
+                                <span class="chart-title" title="新增关注">新增关注</span>
+                                </div>
+
+                                <div class="chart-add" style="height:250px;padding:10px;text-align:center;">
+                                    <a data-toggle="modal" class="dialog-popup" href="${SITE_URL}${cc_biz_id}/operation/monitor/location/add/?menu_id=${star_menu.id}&overview=1"><i class="fa fa-plus"></i></a>
+                                </div>
+
+	                        </div>
+	                    </div>
+                        %endif
+	                </div>
+                    <script>
+                    total_star_graphs_pages = ${total_pages};
+                    menu_id = ${star_menu.id};
+                    </script>

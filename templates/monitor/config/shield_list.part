@@ -1,0 +1,300 @@
+<%block name="css">
+<link href="${STATIC_URL}alert/font/iconfont.css" rel="stylesheet">
+<link href="${STATIC_URL}assets/daterangepicker-2.0/css/daterangepicker.css" rel="stylesheet">
+<style type="text/css">
+.w-all{width:100%;}
+#configModal .SumoSelect{width:100%;}
+#configModal .right-panel{
+    position: relative;
+    min-height: 1px;
+    padding-right: 15px;
+    padding-left: 15px;
+    float:left;
+    width:330px;
+}
+#configModal .weidu3 .SlectBox {
+    width:150px;
+}
+.weidu1,.weidu2,.weidu3{
+    vertical-align: top;
+}
+.control-label.control-label-left{text-align:left;}
+.must-write{display:none;}
+.has-error .must-write{display:block;}
+.has-error .CaptionCont.SlectBox{border-color:#dd4b39;}
+.has-error .options label{color:#333;}
+.text-center.control-label{text-align:center;}
+.weidu1{width:100px;}
+.weidu2{width:50px;}
+.weidu3{width:150px;}
+</style>
+</%block>
+<%block name="content">
+<div class="tab-pane fade" id="shield_list">
+    <div class="panel mb0">
+        <div class="panel-body">
+            <div class="mb15">
+                <a id="valid_shield" class="king-btn king-primary mr10" title="生效">生效</a>
+                <a id="all_shield" class="king-btn king-default" title="所有">所有</a>
+                <a class="king-btn king-success pull-right" id="shield_modal" title="新增"><span class="fa fa-plus"></span> 新增屏蔽策略</a>
+            </div>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>屏蔽类型</th>
+                        <th>屏蔽对象</th>
+                        <th>屏蔽范围</th>
+                        <th>开始时间</th>
+                        <th>结束时间</th>
+                        <th>创建者</th>
+                        <th>最近修改时间</th>
+                        <th>当前状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    % for shield in shields:
+                    <tr class=${"invalid-shield" if shield["state"]==u"已结束" else "valid-shield"}>
+                        <td>${shield["alarm_type_display"]}</td>
+                        <td>${shield["monitor_desc"]}</td>
+                        <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${shield["dimension_desc"]}</td>
+                        <td>${shield["begin_time"]}</td>
+                        <td>${shield["end_time"]}</td>
+##                        <td>${shield["desc"]}</td>
+
+                        <td>${shield["operator"]}</td>
+                        <td>${shield["operate_time"]}</td>
+                        <td>${shield["state"]}</td>
+                        <td>
+                            <a href="###" class="btn btn-xs btn-warning" title="编辑" data-placement="top" shieldid="${shield['id']}" onclick="update_shield(this)"><i class="glyphicon glyphicon-edit"></i></a>
+                            <a href="###" class="btn btn-xs btn-danger" title="删除" data-placement="top" shieldid="${shield['id']}" onclick="remove_shield(this)"><i class="glyphicon glyphicon-remove"></i></a>
+                        </td>
+                    </tr>
+                    % endfor
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="loading hidden" id="shield_table_loading" style="position: fixed;">
+        <div class="loading-wrapper">
+            <img alt="loadding" src="${STATIC_URL}img/hourglass_36.gif">
+            刷新中，请稍等
+        </div>
+    </div>
+</div>
+<!-- Modal -->
+
+</%block>
+<%block name="script">
+<script src="${STATIC_URL}assets/daterangepicker-2.0/js/moment.js"></script>
+<script src="${STATIC_URL}assets/daterangepicker-2.0/js/daterangepicker.js"></script>
+<%!
+import json
+%>
+<script>
+var shield_id = "-1"
+var date_config = {
+    "showDropdowns": true,//显示年，月下拉选择框
+    "showWeekNumbers": true,//显示第几周
+    "timePicker": true,//时间选择
+    "timePicker24Hour": true,//24小时制
+    "timePickerIncrement": 1,//时间间隔
+    "timePickerSeconds": false,
+    "dateLimit": { //可选择的日期范围
+        "days": 7
+    },
+    "locale": {
+        "format": "YYYY-MM-DD HH:mm:ss",// 日期格式
+        "separator": "~",
+        "applyLabel": "确定",
+        "cancelLabel": "取消",
+        "fromLabel": "从",
+        "toLabel": "到",
+        "weekLabel": '周',
+        "customRangeLabel": "自定义",
+        "daysOfWeek": ["日","一","二","三","四","五","六"],
+        "monthNames": ["一月","二月","三月","四月","五月","六月",
+                       "七月","八月","九月","十月","十一月","十二月"],
+        "firstDay": 1// 周开始时间
+    },
+    "startDate": moment(),
+    "endDate": moment().subtract(-7, 'days'),
+    "opens": "center",//left/center/right
+    "drops": "down",//选择框出现的位置 up/down
+    "buttonClasses": "btn btn-sm",//按钮通用样式
+    "applyClass": "btn-success",//确定按钮样式
+    "cancelClass": "btn-default"//取消按钮样式
+}
+
+$(function (){
+    $("#shield_modal").on("click", function(){
+        shield_id = "-1";
+        edit_shield(shield_id);
+    })
+
+    $("#valid_shield").on("click", function(){
+        $(".valid-shield").show()
+        $(".invalid-shield").hide()
+        $("#valid_shield").attr("class", "king-btn king-primary mr10")
+        $("#all_shield").attr("class", "king-btn king-default")
+    })
+
+    $("#all_shield").on("click", function(){
+        $(".invalid-shield").show()
+        $(".valid-shield").show()
+        $("#valid_shield").attr("class", "king-btn king-default mr10")
+        $("#all_shield").attr("class", "king-btn king-primary")
+    })
+
+    $("#valid_shield").trigger("click")
+    
+    //大区包含
+    $('#cc_set').SumoSelect({
+        placeholder: '包含集群，可多选'
+    });
+
+    var wait_data = [{"id":"", "text": "数据待加载"}];
+    var custom_dimension_data = []
+    var custom_dim_value = []
+
+    // 平台、系统、维度包含
+    $('#plat').SumoSelect({
+        placeholder: '包含平台，可多选'
+    });
+    $('#os').SumoSelect({
+        placeholder: '包含系统，可多选'
+    });
+    $('.select2_dimension').select2({
+        data:custom_dimension_data, dropdownAutoWidth:"true"
+    });
+    $('.select2_dim_value').select2({
+        data:custom_dim_value, dropdownAutoWidth:"true"
+    });
+    $('#keyword').SumoSelect({
+        placeholder: '包含关键字，可多选'
+    });
+
+    // 监控分类
+    var type_option = [{ id: 'all', text: '该业务下所有监控' }, { id: 'game', text: '游戏业务数据' }, { id: 'performance', text: '基础性能数据' }, { id: 'custom', text: '自定义' }] ;
+    % if is_staff:
+    type_option.push({id: "all_biz", text: "全业务屏蔽（仅管理员）"})
+    % endif
+    $("#alert_type").select2({data: type_option});
+    $("#alert_type").select2("val","all");
+
+    // 监控名称
+    $("#alert_name").select2({data:wait_data, dropdownAutoWidth:"true"});
+
+    // 基础性能大区模块
+    $(".set_select2").SumoSelect({
+        selectAlltext: '全部',
+        placeholder: '请选择',
+        selectAll: true
+    });
+    $(".shield-form input[name=prform_cate]").click(function(){
+        var div_name = $(this).attr('div_name');
+        $(".set_div").hide();
+        $(".shield-form #"+div_name+"_div").show();
+    })
+    $(".shield-form input[name=prform_cate]:checked").trigger("click");
+
+    $("#alert_type").on("change", function(){
+        $(".config-all").hide()
+        var alert_type = $("#alert_type").select2("val")
+        if(alert_type == "custom"){
+            $(".config-custom").show()
+            fresh_monitor_name(alert_type)
+        } else if(alert_type == "performance"){
+            $(".config-performance").show()
+            $(".shield-form input[name=prform_cate]:checked").trigger("click");
+            fresh_monitor_name(alert_type)
+        } else if(alert_type == "game"){
+            $(".config-name").show()
+            fresh_monitor_name(alert_type)
+        } else if(alert_type == "keyword"){
+            $(".config-keyword").show()
+        }
+        $("#alert_name").select2("val", "")
+    })
+
+    $("#alert_name").on("change", function(){
+        var alert_type = $("#alert_type").select2("val")
+        if(alert_type == "game"){
+            $(".config-game").hide()
+            var target = $("#alert_name").select2("data").target
+            if(target == "ccset"){
+                $("#ccset_div").show()
+                fresh_cc_set()
+            } else if(target == "plat"){
+                $("#plat_div").show()
+            } else if(target == "os"){
+                $("#os_div").show()
+            }
+        } else if(alert_type == "custom"){
+            fresh_dimensions()
+        }
+    })
+
+    $(".select2_dimension").on("change", function(){
+        var _id = $(this).parents().parents().attr("id")
+        fresh_dimension_value(_id)
+    })
+
+    // 提交按钮
+    $("#submit_shield").click(function(){
+        var _this = $(this)
+        if(_this.attr("disabled")){
+            return false;
+        }
+        _this.attr("disabled", true);
+        // 参数验证
+        param = get_shield_param();
+        console.log(param);
+        if (!param){
+            console.log("save_config disabled false");
+            _this.attr("disabled", false);
+            return
+        }
+        _this.html('<img alt="loadding" src="'+static_url+'img/loading_2_16x16.gif">保存中...')
+        submit_shield_data(param);
+    })
+
+    $("#alert_type").trigger("change")
+
+    $("#dimension-config-0 .add_dimension_a").click();
+    $("#dimension-config-1 .control-label").remove();
+})
+function remove_shield(obj){
+    if($(obj).attr("disabled")){
+        return false;
+    }
+    $(obj).attr("disabled", true);
+    shield_id = $(obj).attr("shieldid")
+    var confirm_content = "确认删除该屏蔽?";
+    _app_confirm(confirm_content, function(){
+        $.ajax({
+            type: 'POST',
+            dataType: "json",
+            url: site_url+cc_biz_id+'/remove_shield/',
+            data: {
+                'biz_id': cc_biz_id,
+                'shield_id': shield_id
+            },
+            success: function(data){
+                if(data.result){
+                    alert_topbar("删除成功", "success");
+                    $("#shield_table_loading").removeClass("hidden");
+                    location.href = site_url + cc_biz_id + '/config/?tab=shield';
+                }
+                else{
+                    $(obj).attr("disabled", false);
+                    d = app_alert(data.message, "fail");
+                }
+            }
+        })
+    }, function(){
+        $(obj).attr("disabled", false);
+    });
+}
+</script>
+</%block>

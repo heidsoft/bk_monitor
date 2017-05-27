@@ -1,0 +1,84 @@
+    <%
+        count_method = new_location.monitor.count_method.lower() if new_location.monitor.count_method else "sum"
+        if count_method not in value_method_desc:
+            count_method = "sum"
+    %>
+    <div class="chart col-lg-6 col-md-12 chart-contain" data-monitor_id="${new_location.monitor.id}" data-system_menu="${new_location.menu.system_menu}" data-location_id="${new_location.id}" data-enabled="${1 if new_location.monitor.is_enabled else 0}" data-delete_able="${1 if new_location.monitor.delete_able else 0}">
+        <div class="king-block king-block-bordered mb15">
+            <div class="king-block-header king-gray-light pl10">
+                <ul class="king-block-options">
+##                    <li>
+##                        <img class="loading" style="display: none;" alt="loading" src="${STATIC_URL}components/loading1/images/loading_1_16x16.gif">
+##                    </li>
+                    <li>
+                        <button type="button" title="刷新" class="refresh">
+                            <i class="fa fa-refresh"></i>
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" title="${u"取消关注" if new_location.monitor.favorite else u"关注"}" class="favorite ${"active" if new_location.monitor.favorite else ""}">
+                            <i class="fa fa-star"></i>
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" title="配置" data-url="${SITE_URL}${cc_biz_id}/config/custom/${new_location.monitor.id}/" class="settings"><i class="fa fa-cog"></i></button>
+                    </li>
+                    <li>
+                        <button type="button" class="chart-filter-btn" title="条件过滤">
+                            <i class="fa fa-chevron-circle-down"></i>
+                            <i class="fa fa-chevron-circle-up"></i>
+                        </button>
+                    </li>
+##                    %if new_location.monitor.is_enabled:
+##                    <li>
+##                    %else:
+                    <li style="display: none;">
+##                    %endif
+                        <button type="button" title="停用" class="m_disabled">
+                            <i class="fa fa-power-off"></i></button>
+                    </li>
+                    %if not (new_location.monitor.monitor_type == new_location.menu.system_menu and  new_location.menu.system_menu in [u"online", u"register", u"login"]):
+                    <li>
+                        <button type="button" title="移除" class="delete">
+                            <i class="fa fa-close"></i></button>
+                    </li>
+                    %endif
+                </ul>
+                <h3 class="king-block-title">
+                    <span class="monitor-title">
+                    ${new_location.monitor.monitor_name}
+                    </span>
+                    <span class="info-title mr30"> [统计方式： <span class="value-method">${value_method_desc[count_method]}</span><span>]</span></span>
+                </h3>
+            </div>
+            <div class="chart-filter p0" style="display: none;">
+                <form class="form-inline">
+                    ## 隐藏 业务id 字段
+                %for field in new_location.monitor.dimensions:
+                    %if field.alias_name != u"业务ID":
+                    <div class="form-group m10 web-filter">
+                        <label title="${field.field}">${field.alias_name}：</label>
+                        <input type="text" name="${field.field}" class="form-control" style="width:120px" placeholder="加载中...">
+                    </div>
+                    %endif
+                %endfor
+                    <div class="form-group m10">
+                        <label for="value_method">统计：</label>
+                        <select class="form-control" style="width:120px" name="value_method">
+                            %for k in (['sum', 'avg', 'max', 'min', "count"] if count_method != "count" else ["count"]):
+                                %if new_location.monitor.count_method and count_method == k:
+                                <option value="${k}" selected>${value_method_desc[k]}</option>
+                                %else:
+                                <option value="${k}">${value_method_desc[k]}</option>
+                                %endif
+                            %endfor
+                        </select>
+                    </div>
+                    <a class="king-btn king-info graph_detail" title="查看详细">详细</a>
+                </form>
+
+            </div>
+            <div class="king-block-content-chart">
+            </div>
+        </div>
+    </div>

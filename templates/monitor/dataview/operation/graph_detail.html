@@ -1,0 +1,383 @@
+<style>
+
+.dataTables_filter {
+    display: none;
+}
+.td-center{
+    text-align: center;;
+}
+thead tr{
+    background-color: #e6e6e6;
+}
+</style>
+<div class="monitor-popup-wrapper config__panel">
+    <div class="config__panelHead">
+        <div class="config__panelTitle pull-left">
+            <span class="config__icon config__panelIcon">
+                <i class="iconfont icon-shitu"></i>
+            </span>
+            <span class="config__panelTitle-text">${m.monitor_name} |  <span class="info-title">统计方式: ${value_method}</span></span>
+        </div>
+        <div class="config__panelTool pull-right" id="close">
+            <span class="config__icon config__panelIcon">
+                <i class="fa fa-times"></i>
+            </span>
+        </div>
+    </div>
+    <div class="config__panelContent">
+        <div class="monitor-chart" id="monitorChart">
+            <!-- 加载遮罩 -->
+            <div class="loading" id="chartLoading">
+
+            </div>
+        </div>
+        <div class="monitor-list pt30">
+            <div class="monitor-list-tool clearfix pb20">
+                <div class="tool-left pull-left">
+                    <select id="toolField" class="select2_box tool-field">
+                        %for i, f in enumerate(fields):
+                        <option value="${i+1}">${f.field}</option>
+                        %endfor
+                    </select>
+                    <input type="text" name="" class="config__input" id="field_filter_input">
+                    <a class="king-btn king-info tool-search" title="搜索" id="field_search">搜索</a>
+                    <a class="king-btn tool-search" title="重置" id="field_reset">重置</a>
+                </div>
+                <div class="tool-right pull-right clearfix">
+                    <a class="king-btn king-info hidden" title="确定" id="render_graph">确定</a>
+                    <a class="king-btn tool-dimension" title="多维度对比">
+                        <label>
+                            <input type="checkbox" id="multiple_field"> &nbsp;&nbsp;多维度对比
+                        </label>
+                    </a>
+                    <div class="input-group date pull-right tool-date" id="toolDate" data-date="" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd" style="padding-top: 2px;">
+                        <input class="form-control" size="16" type="text" value="" id="detail_date_str">
+                        <br>
+                    </div>
+                </div>
+            </div>
+
+            <div class="monitor-list-content">
+                <table id="monitorList" class="table table-bordered"></table>
+                <!-- 加载遮罩 -->
+                <div class="loading-detail hidden" id="tableLoading">
+                    <div class="loading-content">
+
+                        <img alt="loadding" src="${STATIC_URL}img/hourglass_36.gif">
+                        加载中，请稍等
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    var monitor_id = ${monitor_id};
+    var value_method = "${value_method}";
+    <%
+        import json
+    %>
+    var field_id_list = ${json.dumps(field_id_list)};
+    var condition = {};
+
+(function(){
+    var today = new Date();
+    // $时间选择
+    $('#detail_date_str').kendoDatePicker({
+        max: today,
+        min: new Date(new Date().setDate(new Date().getDate() - 30)),
+        value : today,
+        format : "yyyy-MM-dd"
+    }).change(function(){
+        render_graph_detail();
+        refresh_table();
+    });
+	//初始化下拉框
+    $('#toolField').select2({
+    	placeholder: '字段'
+    });
+
+    //查看趋势绑定函数
+    $(".config__panelContent").on('click', '[data-type="trend"]', function(){
+        var tr = $(this).closest("tr");
+        var filter_str = make_filter_str_by_tr(tr);
+        render_graph_detail(filter_str);
+    });
+
+    //查看趋势绑定函数
+    $(".config__panelContent").on('click', '[data-type="setting"]', function(){
+        var tr = $(this).closest("tr");
+        edit_strategy_by_conditon(tr)
+    });
+
+    //初始化表格中多选框
+    $('#multiple_field').iCheck({
+	    checkboxClass: 'icheckbox_minimal-blue',
+	    increaseArea: '20%' // optional
+	}).on('ifChanged', function(){
+        var checked = $("#multiple_field").prop("checked");
+        if (!checked){
+            $("input[type=checkbox]").prop("checked", false);
+            datatable.column( 0 ).visible(checked);
+            $("#render_graph").addClass("hidden").click();
+        }else{
+            datatable.column( 0 ).visible(checked);
+        }
+
+    });
+
+
+	//关闭popup
+	$('#close').on('click', function(){
+        field_id_list = [];
+        $("#s_id").val("");
+        condition = {}
+		$(".monitor-popup").addClass("hidden")
+                    $('.alert-mask').addClass("hidden");
+                    $('body').css('overflow', 'auto');
+	});
+
+
+    language = {
+      	search: '搜索：',
+		lengthMenu: "每页显示 _MENU_ 记录",
+		zeroRecords: "没找到相应的数据！",
+		info: "分页 _PAGE_ / _PAGES_",
+		infoEmpty: "暂无数据！",
+		infoFiltered: "(从 _MAX_ 条数据中搜索)",
+		paginate: {
+			first: '首页',
+			last: '尾页',
+			previous: '上一页',
+			next: '下一页',
+		}
+    };
+    checkbox = '<input type="checkbox" class="row-item" name="list">';
+    operation = '<a href="javascript:;" data-type="trend" class="pull-left">查看趋势</a><a href="javascript:;" data-type="setting" class="pull-right">设置告警</a>';
+    dataSet = [
+        %for row in field_values:
+            [
+                checkbox,
+                %for i in range(len(fields)):
+                    '${row[i]}',
+                %endfor
+                operation],
+        %endfor
+    ];
+    table = $("#monitorList").dataTable({
+        autoWidth: false,
+        lengthChange: false, //不允许用户改变表格每页显示的记录数
+        pageLength : 8, //每页显示几条数据
+        pagingType: 'full_numbers',
+        ordering: false,
+        searching: true,
+        bFilter: false,
+        data: dataSet,
+        columns : [
+        	{title: '<input type="checkbox" name="list" id="listAll">', },
+                %for f in fields:
+                   {title: '${f.field}${"(%s)" % f.alias_name if f.alias_name != f.field else ""}'},
+                %endfor
+        	{title: '操作'}
+        ],
+        language:language
+    });
+    datatable = $("#monitorList").DataTable();
+    datatable.column( 0 ).visible( false );
+    render_graph_detail();
+})();
+
+    function show_graph_loading(){
+        $("#monitorChart").html('<img alt="loadding" src="'+static_url+'img/hourglass_36.gif" style="margin-top: 100px;margin-left:45%;">');
+    }
+    function hide_graph_loading(){
+        $("#monitorChart").html('');
+    }
+    function show_table_loading(){
+        $("#tableLoading").removeClass("hidden");
+    }
+    function hide_table_loading(){
+        $("#tableLoading").addClass("hidden");
+    }
+
+    function edit_strategy_by_conditon(tr){
+        condition = {};
+        var offset = $("#multiple_field").prop("checked")?1:0;
+        for (var i=0; i<field_id_list.length; i++){
+            var field = field_id_list[i];
+            condition[field] = $(tr.find("td")[i+offset]).text();
+        }
+        var params = {
+            condition: JSON.stringify(condition),
+            monitor_id: monitor_id,
+        };
+        $.post(site_url+cc_biz_id+'/get_strategy_id_by_condition/', params, function(res){
+            var alarm_strategy_id = res.data.id;
+            $("#s_id").val(res.data.s_id);
+            edit_strategy(alarm_strategy_id);
+        }, 'json');
+    }
+
+    function render_graph_detail(filter_str){
+        var contain = $("#monitorChart");
+        show_graph_loading();
+        var params = {
+            value_method: value_method,
+            monitor_id: monitor_id,
+            date_str: $("#detail_date_str").val(),
+            filter_str: filter_str?filter_str:make_filter_str()
+        };
+        $.post(site_url+cc_biz_id+'/'+'operation/monitor/graph_detail_point/', params, function(res){
+            hide_graph_loading();
+            if(res.result){
+                Hchart.make_graph(res.data.data, "#monitorChart");
+            }else{
+                contain.html("");
+                var err_div = $($err_div).appendTo(contain);
+                //err_div.find("#error_msg").text(res.message).next().text(res.data.echo_sql!==""?("SQL: " + res.data.echo_sql): "");
+                err_div.find("#error_msg").text(res.message);
+                err_div.find("#error_title").text("");
+                err_div.find("#error_msg").css({"text-align": "center","margin": "80px"});
+            }
+        }, 'json');
+    }
+
+    $("#field_search").click(function(){
+        var columns_index = parseInt($("#toolField").val());
+        datatable.search('').columns().search('').draw();
+        datatable.columns(columns_index).search($("#field_filter_input").val()).draw();
+    })
+
+    $("#field_reset").click(function(){
+        datatable.search('').columns().search('').draw();
+        $("#field_filter_input").val("");
+    })
+
+    function refresh_table(){
+        show_table_loading();
+        $.get(site_url+cc_biz_id+'/'+"operation/monitor/get_all_field_values/", {
+            monitor_id: monitor_id,
+            date_str: $("#detail_date_str").val()
+        }, function(res){
+            hide_table_loading();
+            datatable.rows().remove().draw();
+            dataSet = [];
+            for (var i= 0,len=res.data.length; i<len; i++){
+                var row = res.data[i].slice();
+                row.splice(0, 0, checkbox);
+                row.push(operation);
+                dataSet.push(row);
+            }
+            if (dataSet.length > 0){
+                datatable.destroy();
+                $("#monitorList").dataTable({
+                    autoWidth: false,
+                    lengthChange: false, //不允许用户改变表格每页显示的记录数
+                    pageLength : 8, //每页显示几条数据
+                    pagingType: 'full_numbers',
+                    ordering: false,
+                    searching: true,
+                    bFilter: false,
+                    data: dataSet,
+                    columns : [
+                        {title: '<input type="checkbox" name="list" id="listAll">'},
+                            %for f in fields:
+                               {title: '${f.alias_name}'},
+                            %endfor
+                        {title: '操作'}
+                    ],
+                    columnDefs: [
+                        {
+                            targets: 0,
+                            className: 'td-center'
+                        }
+                    ],
+                    language:language
+                });
+                datatable = $("#monitorList").DataTable();
+                datatable.column( 0 ).visible( $("#multiple_field").prop("checked") );
+            }
+
+        }, 'json');
+    }
+
+
+    $("#monitorList").on("click", "td.td-center:not(.row-item)", function(e){
+        if ($(e.target).is("input")){
+            return
+        }
+        var checked = $(this).find("input").prop("checked");
+        $(this).find("input").prop("checked", !checked).trigger("change");
+    });
+
+    $("#monitorList").on("click", "th:not(#listAll)", function(e){
+        if ($(e.target).is("input")){
+            return
+        }
+        if ($(this).find("input").length > 0){
+            var checked = $(this).find("input").prop("checked");
+            $(this).find("input").prop("checked", !checked).trigger("change");
+        }
+    });
+    $("#monitorList").on("change", "#listAll", function(){
+        var checked = $(this).prop("checked");
+        $(".row-item").prop("checked", checked);
+        render_graph_detail();
+    });
+    $("#monitorList").on("click", "input:not(#listAll)", function(){
+        render_graph_detail();
+    });
+
+    $("#monitorList").on("change", ".row-item", function(e){
+        refresh_check_all_status();
+    });
+
+    function refresh_check_all_status(){
+        var checked_count = 0,
+            len = $(".row-item").length;
+        for (var i= 0;i<len;i++){
+            var row = $($(".row-item")[i]);
+            if (row.prop("checked")){
+                checked_count ++;
+            }
+        }
+        if (checked_count == len){
+            $("#listAll").prop("checked", true)
+        }else{
+            $("#listAll").prop("checked", false)
+        }
+    }
+
+    $('#monitorList').on( 'page.dt', function () {
+        setTimeout(function(){
+            refresh_check_all_status()
+        }, 100);
+
+    });
+
+    function make_filter_str(){
+        var filter_str_list = [];
+        datatable.$('input[type="checkbox"]').each(function(){
+            if (this.checked){
+                filter_str_list.push(make_filter_str_by_tr($(this).closest("tr")));
+            }
+        });
+        return filter_str_list.join(" or ");
+    }
+
+    function make_filter_str_by_tr(tr){
+        var field_info_list = [];
+        var offset = $("#multiple_field").prop("checked")?1:0;
+        for (var i=0; i<field_id_list.length; i++){
+            var field = field_id_list[i];
+            var val = $(tr.find("td")[i+offset]).text();
+            field_info_list.push(field+"='"+val+"'");
+        }
+        return "(" + field_info_list.join(" and ") + ")"
+    }
+    $("#render_graph").click(function(){
+        render_graph_detail();
+    });
+</script>

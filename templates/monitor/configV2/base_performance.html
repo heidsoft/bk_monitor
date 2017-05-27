@@ -1,0 +1,457 @@
+
+
+
+    <div class="iframe-back fr" style="margin-top: 0;margin-right: 20px;">
+	    <a class="king-btn king-primary" title="返回" href="###" id="back_btn_id">返回</a>
+	</div>
+	<div class="page" style="margin-top: 30px; height: 95%;">
+		<article class="content" style="min-height: 700px;" id="main-content">
+			<!-- 性能指标 -->
+			<section class="config__panel" id="performance_indicator">
+				<div class="config__panelHead">
+					<div class="config__panelTitle pull-left">
+						<span class="config__icon config__panelIcon">
+							<i class="iconfont icon-tiaojianguolv"></i>
+						</span>
+						<span class="config__panelTitle-text">性能指标</span>
+					</div>
+					<div class="config__panelTool pull-right" data-type="slideItem">
+						<span class="config__icon config__panelIcon">
+							<i class="iconfont icon-jiantou1"></i>
+						</span>
+					</div>
+				</div>
+				<div class="config__panelContent">
+					<!-- 指标分类 -->
+					<div class="config__row">
+						<span class="config__panelLabel required">
+							指标分类
+						</span>
+						<div class="config__rowContent">
+                            % for item in host_list:
+                            <label class="config__inputItem">
+                                % if hostindex and item["category"] == hostindex.category:
+                                <input type="radio" name="index_category" checked data-type="icheck" value="${item["category"]}"><span class="iCheck-text" >${item["text"]}</span>
+                                % else:
+								<input type="radio" name="index_category" data-type="icheck" value="${item["category"]}"><span class="iCheck-text">${item["text"]}</span>
+                                %endif
+							</label>
+                            % endfor
+                            <span class="config__errorMsg"></span>
+						</div>
+					</div>
+					<!-- 指标名称 -->
+					<div class="config__row">
+						<span class="config__panelLabel lh-30 required">
+							指标名称
+						</span>
+						<div class="config__rowContent">
+							<input type="text" id="host_index" class="config__select" data-value="${hostindex.id}"/>
+                            <span class="config__errorMsg"></span>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- 触发条件 -->
+			<section class="config__panel" id="trigger_condition">
+				<div class="config__panelHead">
+					<div class="config__panelTitle pull-left">
+						<span class="config__icon config__panelIcon">
+							<i class="iconfont icon-tiaojianguolv"></i>
+						</span>
+						<span class="config__panelTitle-text">触发条件</span>
+					</div>
+					<div class="config__panelTool pull-right" data-type="slideItem">
+						<span class="config__icon config__panelIcon">
+							<i class="iconfont icon-jiantou1"></i>
+						</span>
+					</div>
+				</div>
+				<div class="config__panelContent">
+					<!-- 监控对象 -->
+					<div class="config__row">
+						<span class="config__panelLabel required">监控对象</span>
+						<div class="config__rowContent">
+							<div class="config__subRow">
+								<label class="config__inputItem">
+									<input type="radio" name="prform_cate" checked data-type="icheck" data-target="monitor_ip"  value="ip"><span class="iCheck-text">按主机IP</span>
+								</label>
+								<label class="config__inputItem">
+									<input type="radio" name="prform_cate" data-type="icheck" data-target="monitor_set" value="set"><span class="iCheck-text">按业务拓扑</span>
+								</label>
+								<label class="config__inputItem">
+									<span class="data-tip" data-html="true" data-trigger="hover" data-placement="right" data-content="<span class='word-break'>按主机IP：<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;通过手动输入的形式，IP将是固定的。<br><br>按业务拓扑：<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;该模式是直接对被选择的集群或模块起作用，集群或模块下的主机动态变动，都会受到直接影响。</span>"><i class="fa fa-question-circle"></i>说明</span>
+								</label>
+                                <span class="config__errorMsg" id="prform_cate_err"></span>
+							</div>
+							<div class="config__subRowContent">
+								<div class="config__subRowContent-item clearfix" data-id="monitor_ip">
+									<textarea rows="6" class="monitor-ip" placeholder="请输入主机IP，半角逗号分隔" id="monitorIP" v-model="ip" style="vertical-align: middle;"></textarea>
+                                    <span class="config__errorMsg" id="ip_err" style="float:right;"></span>
+								</div>
+								<div class="config__subRowContent-item hidden" data-id="monitor_set">
+									<p class="config__subRowContent-title">集群</p>
+									<p>
+										<input class="config__select" data-type="vue-select2" id="monitorSET" name="cc_set">
+									</p>
+									<p class="config__subRowContent-title">模块</p>
+									<p>
+                                        <input class="config__select" data-type="vue-select2" id="monitorModule" name="cc_module">
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- 检测算法 -->
+					<div class="config__row" id="strategy_option_row">
+						<span class="config__panelLabel required">检测算法</span>
+						<div class="config__rowContent">
+							<div class="config__subRow">
+								<label class="config__inputItem">
+									<input type="radio" name="strategy_id" checked data-type="icheck" data-target="static_threshold" value="1000"><span class="iCheck-text">静态阈值</span>
+								</label>
+								<label class="config__inputItem">
+									<input type="radio" name="strategy_id" data-type="icheck" data-target="strategy" value="1001"><span class="iCheck-text">同比策略（简易）</span>
+								</label>
+								<label class="config__inputItem">
+									<input type="radio" name="strategy_id" data-type="icheck" data-target="strategy" value="1002"><span class="iCheck-text">环比策略（简易）</span>
+								</label>
+                                <span class="config__errorMsg" id="strategy_id_err"></span>
+							</div>
+							<div class="config__subRowContent clearfix">
+								<div class="config__subRowContent-item config__preLabel trigger-setting pull-left">
+									<div class="static-threshold" data-id="static_threshold">
+										性能指标当前值
+										<select class="inner-select" data-type="vue-select2" id="tAlgorithmSelect" name="method">
+											<option value="eq">=</option>
+											<option value="gte">≥</option>
+                                            <option value="gt">＞</option>
+											<option value="lte">≤</option>
+                                            <option value="lt">＜</option>
+										</select>
+										<input min="1" type="number" onkeypress='return event.charCode >= 48 && event.charCode <= 57' id="tAlgorithmInput" id="tAlgorithmInput" placeholder="请填写阈值..." class="inner-input" v-model="threshold">
+                                        {{host_index_unit_display}}
+										时，触发告警
+									</div>
+									<div class="strategy hidden" data-id="strategy">
+										<p class="strategy-row">
+                                            性能指标当前值{{strategy_display}}
+											<span class="strategy-up strategy-input">
+												<input min="1" type="number" id="strategy_up" class="inner-input" v-model="ceil" onkeypress='return event.charCode >= 48 && event.charCode <= 57'>
+											</span>
+											${"%"}时，触发告警
+										</p>
+										<p class="strategy-row">
+											性能指标当前值{{strategy_display}}
+											<span class="strategy-down strategy-input">
+												<input min="1" type="number" id="strategy_down" class="inner-input strategy-down" v-model="floor" onkeypress='return event.charCode >= 48 && event.charCode <= 57'>
+											</span>
+											${"%"}时，触发告警
+										</p>
+									</div>
+								</div>
+                                <span class="config__errorMsg" id="strategy_option_error"></span>
+							</div>
+						</div>
+					</div>
+					<!-- 收敛规则 -->
+					<div class="config__row">
+						<span class="config__panelLabel"><span class="required">收敛规则</span></span>
+						<div class="config__rowContent">
+							<div class="config__subRow">
+								<label class="config__inputItem">
+									<input type="radio" name="converge_id" data-type="icheck" data-target="ruleA" value="1"><span class="iCheck-text">收敛方式一</span>
+								</label>
+								<label class="config__inputItem">
+									<input type="radio" name="converge_id" data-type="icheck" data-target="ruleB" value="2"><span class="iCheck-text">收敛方式二</span>
+								</label>
+								<label class="config__inputItem">
+									<input type="radio" name="converge_id" checked data-type="icheck" data-target="ruleNone" value="0">
+                                    <span class="data-tip" data-html="true" data-trigger="hover" data-placement="right" data-content="<span class='word-break'>监控系统默认设定了内置的收敛规则，如果你有个性化的特殊收敛需求，请选择其它2种收敛规则。</span>"><span class="iCheck-text">系统默认<i class="fa fa-question-circle"></i></span></span>
+								</label>
+                                <span class="config__errorMsg"></span>
+							</div>
+							<div class="config__subRowContent clearfix hidden" data-type="rule-wrapper">
+                                <div class="config__subRowContent-item config__preLabel convergence-rule pull-left hidden" data-id="ruleA">
+                                    <div class="convergence-ruleA">
+										<select class="inner-select" data-type="vue-select2" id="ruleBSelect" name="converge_continuous">
+											<option value="5">5分钟</option>
+											<option value="10">10分钟</option>
+                                            <option value="15">15分钟</option>
+                                            <option value="30">30分钟</option>
+                                            <option value="60">1小时</option>
+										</select>
+										内，满足
+										<input min="1" type="number" id="ruleBInput" class="inner-input" v-model="converge_count" onkeypress='return event.charCode >= 48 && event.charCode <= 57'>
+										次告警条件时，才触发告警
+									</div>
+                                </div>
+								<div class="config__subRowContent-item config__preLabel convergence-rule pull-left hidden" data-id="ruleB">
+									<div class="convergence-ruleB">
+										自第
+										<input min="1" type="number" id="ruleAInput" class="inner-input" v-model="converge_count" onkeypress='return event.charCode >= 48 && event.charCode <= 57'>
+										次告警后
+										<select class="inner-select" data-type="vue-select2" id="ruleASelect" name="converge_continuous">
+											<option value="5">5分钟</option>
+											<option value="10">10分钟</option>
+                                            <option value="15">15分钟</option>
+                                            <option value="30">30分钟</option>
+                                            <option value="60">1小时</option>
+										</select>
+										内不再发出告警
+									</div>
+								</div>
+
+                                <div class="pull-left hidden" data-id="ruleNone"></div>
+                                <span class="config__errorMsg" id="converge_err"></span>
+							</div>
+						</div>
+					</div>
+                    <div class="config__row" id="nodata_alarm_row">
+                        <span class="config__panelLabel"><span class="required">无数据告警</span></span>
+                        <div class="config__rowContent">
+                            <label class="config__inputItem">
+                                <input type="radio" name="show_nodata_alarm" data-type="icheck" value="1" data-target="nodata_alarm"><span class="iCheck-text">是</span>
+                            </label>
+                            <label class="config__inputItem">
+                                <input type="radio" name="show_nodata_alarm" data-type="icheck" checked value="0"><span class="iCheck-text">否</span>
+                            </label>
+
+                            <label data-id="nodata_alarm" class="hidden">
+                            当数据连续丢失<input min="0" type="number" name="nodata_alarm" class="config__input va-middle" v-model="nodata_alarm" style="width: 50px;min-width: 50px;" onkeypress='return event.charCode >= 48 && event.charCode <= 57'>
+                            个周期时，触发告警</label>
+                            <label class="config__inputItem">
+                                <span class="data-tip" data-html="true" data-trigger="hover" data-placement="right" data-content="<span class='word-break'>当监控维度的值出现断层时，是否发出告警？ 对于相对离散的数据源，建议不打开无数据告警。</span>"><i class="fa fa-question-circle"></i>说明</span>
+                            </label>
+                            <span class="config__errorMsg" id="nodata_alarm_error"></span>
+                        </div>
+                    </div>
+				</div>
+			</section>
+
+			<!-- 自动处理 -->
+			<section class="config__panel" id="auto_process">
+				<div class="config__panelHead">
+					<div class="config__panelTitle pull-left clearfix">
+						<span class="config__icon config__panelIcon">
+							<i class="iconfont icon-tiaojianguolv"></i>
+						</span>
+						<span class="config__panelTitle-text">自动处理（状态：{{solution_is_enable?"开":"关"}}）</span>
+					</div>
+					<div class="config__panelTool pull-right" data-type="slideItem">
+						<span class="config__icon config__panelIcon">
+							<i class="iconfont icon-jiantou1 expanded"></i>
+						</span>
+					</div>
+					<div class="switchery_box pull-right mr10" id="auto_process_btn">
+					    <input type="checkbox" class="js-switch-small" v-model="solution_is_enable" data-type="switch">
+					</div>
+				</div>
+				<div class="config__panelContent" style="display: none">
+					<!-- 处理方式 -->
+					<div class="config__row">
+						<span class="config__panelLabel lh-30">处理方式</span>
+						<div class="config__rowContent">
+							<label class="config__inputBtn text-info">
+								<input type="radio" name="auto_process_method" v-model="solution_type" value="job">
+								<a class="king-btn-demo king-btn" title="作业平台">作业平台</a>
+							</label>
+						</div>
+					</div>
+					<!-- 流程列表 -->
+					<div class="config__row">
+						<span class="config__panelLabel lh-30">作业列表</span>
+						<div class="config__rowContent">
+                            <input class="config__select" data-type="vue-select2" id="autoProcessFlowList" name="solution_task_id">
+							<a class="king-btn-demo king-btn update-btn" title="" id="updateTaskList">
+								<i class="iconfont icon-weibiaoti2"></i>
+							</a>
+							<a class="king-btn-demo king-btn king-success" title="新建流程" id="addFlow" href="${JOB_URL}" target="_blank">
+							    <i class="fa fa-plus btn-icon"></i>新建作业
+							</a>
+							<label class="config__inputItem" style=" padding-left: 45px;">
+								<input type="checkbox" name="solution_params_replace" data-type="icheck" value="replace"><span class="iCheck-text">执行时，故障IP替换作业执行IP</span>
+							</label>
+						</div>
+					</div>
+					<!-- 结果通知 -->
+					<div class="config__row">
+						<span class="config__panelLabel lh-30">结果通知</span>
+						<div class="config__rowContent">
+							<label class="config__inputItem">
+								<input type="checkbox" name="solution_notice" data-type="icheck" value="begin"><span class="iCheck-text">开始执行前通知</span>
+							</label>
+							<label class="config__inputItem">
+								<input type="checkbox" name="solution_notice" data-type="icheck" value="end"><span class="iCheck-text">执行完成后通知</span>
+							</label>
+##							<label class="config__inputItem">
+##								<input type="checkbox" name="result_msg" data-type="icheck" value="all"><span class="iCheck-text">执行前后都通知</span>
+##                            </label>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- 通知方式 -->
+			<section class="config__panel" id="alert_method">
+				<div class="config__panelHead">
+					<div class="config__panelTitle pull-left">
+						<span class="config__icon config__panelIcon">
+							<i class="iconfont icon-tiaojianguolv"></i>
+						</span>
+						<span class="config__panelTitle-text">通知方式</span>
+					</div>
+					<div class="config__panelTool pull-right" data-type="slideItem">
+						<span class="config__icon config__panelIcon">
+							<i class="iconfont icon-jiantou1"></i>
+						</span>
+					</div>
+				</div>
+				<div class="config__panelContent">
+					<!-- 告警级别 -->
+					<div class="config__row">
+						<span class="config__panelLabel lh-30 required">告警级别</span>
+						<div class="config__rowContent">
+							<label class="config__inputBtn text-muted">
+								<input type="radio" name="alert_level" value="3" v-model="monitor_level">
+								<a class="king-btn-demo king-btn" title="轻微警告">轻微警告</a>
+							</label>
+							<label class="config__inputBtn text-info">
+								<input type="radio" name="alert_level" value="2" v-model="monitor_level">
+								<a class="king-btn-demo king-btn" title="普通警告">普通警告</a>
+							</label>
+							<label class="config__inputBtn text-danger">
+								<input type="radio" name="alert_level" value="1" v-model="monitor_level">
+								<a class="king-btn-demo king-btn" title="严重警告">严重警告</a>
+							</label>
+						</div>
+					</div>
+					<!-- 通知方式 -->
+					<div class="config__row">
+						<span class="config__panelLabel lh-30"><span class="required">通知方式</span></span>
+						<div class="config__rowContent clearfix">
+                            <label class="config__inputItem">
+                                <input type="checkbox" name="notice" data-type="icheck" value="mail" v-model="notice_list">
+                                <span class="data-tip" data-html="true" data-trigger="hover" data-placement="top" data-content="<span class='word-break'>邮件</span>">
+                                    <img src="${STATIC_URL}alert/img/mail.png" class="icheck-img">
+                                </span>
+                            </label>
+                            <label class="config__inputItem">
+                                <input type="checkbox" name="notice" data-type="icheck" value="sms" v-model="notice_list">
+                                <span class="data-tip" data-html="true" data-trigger="hover" data-placement="top" data-content="<span class='word-break'>短信</span>">
+                                    <img src="${STATIC_URL}alert/img/message.png" class="icheck-img">
+                                </span>
+                            </label>
+                            <label class="config__inputItem">
+                                <input type="checkbox" name="notice" data-type="icheck" value="wechat" v-model="notice_list">
+                                <span class="data-tip" data-html="true" data-trigger="hover" data-placement="top" data-content="<span class='word-break'>微信</span>">
+                                    <img src="${STATIC_URL}alert/img/wechat.png" class="icheck-img">
+                                </span>
+                            </label>
+                            <label class="config__inputItem hidden">
+                                <input type="checkbox" name="notice" data-type="icheck" value="im" v-model="notice_list">
+                                <span class="data-tip" data-html="true" data-trigger="hover" data-placement="top" data-content="<span class='word-break'>RTX</span>">
+                                    <img src="${STATIC_URL}alert/img/rtx.png" class="icheck-img">
+                                </span>
+                            </label>
+                            <label class="config__inputItem hidden">
+                                <input type="checkbox" name="notice" data-type="icheck" data-id="phone_receiver" value="phone" v-model="notice_list">
+                                <span class="data-tip" data-html="true" data-trigger="hover" data-placement="top" data-content="<span class='word-break'>电话</span>">
+                                    <img src="${STATIC_URL}alert/img/phone.png" class="icheck-img">
+                                </span>
+                            </label>
+							<select name="phone_receiver" data-type="vue-select2" class="config__select hidden" multiple="multiple">
+                                %for uin, nick in other_users.items():
+                                    <option value="${uin}">${nick}(${uin})</option>
+                                %endfor
+                            </select>
+                            &nbsp;&nbsp;&nbsp;
+                            <span class="data-tip hidden" data-html="true" data-trigger="hover" data-placement="top" data-content="<span class='word-break'>只有在当前接听者选择转移下一位处理人的情况下，才会往后进行呼叫知会；如果当前接听人选择不转移，就不会给后排人员呼叫。</span>"><i class="fa fa-question-circle"></i>说明</span>
+                            <span class="config__errorMsg" id="notice_list_error" style="float:right;"></span>
+						</div>
+					</div>
+					<!-- 通知角色 -->
+					<div class="config__row">
+						<span class="config__panelLabel lh-30"><span class="required">通知角色</span></span>
+						<div class="config__rowContent clearfix">
+							<label class="config__inputItem">
+								<input type="checkbox" name="notice_role_list" data-type="icheck" value="Operator">
+								<span class="iCheck-text">主负责人</span>
+							</label>
+							<label class="config__inputItem">
+								<input type="checkbox" name="notice_role_list" data-type="icheck" value="BakOperator">
+								<span class="iCheck-text">备份负责人</span>
+							</label>
+							<label class="config__inputItem">
+								<input type="checkbox" name="notice_role_list" data-type="icheck" value="Maintainers">
+								<span class="iCheck-text">运维</span>
+							</label>
+							<label class="config__inputItem">
+								<input type="checkbox" name="notice_role_list" data-type="icheck" data-id="responsible" value="other">
+								<span class="iCheck-text">其他人员</span>
+							</label>
+							<select name="responsible" data-type="vue-select2" class="config__select hidden" multiple="multiple">
+                                %for uin, nick in other_users.items():
+                                    <option value="${uin}">${nick}(${uin})</option>
+                                %endfor
+                            </select>
+                            <span class="config__errorMsg" id="notice_role_list_error" style="float:right;"></span>
+						</div>
+					</div>
+					<!-- 通知时间段 -->
+					<div class="config__row">
+						<span class="config__panelLabel lh-30">通知时间段</span>
+						<div class="config__rowContent">
+							<select class="config__select alert-duration" data-type="vue-select2" id="startHour" name="notice_start_hh">
+                                %for i in xrange(24):
+                                    <option>${("0%s" if i<10 else "%s") % i}</option>
+                                %endfor
+							</select>
+							:
+							<select class="config__select alert-duration" data-type="vue-select2" id="startMinute" name="notice_start_mm">
+                                %for i in xrange(60):
+                                    <option>${("0%s" if i<10 else "%s") % i}</option>
+                                %endfor
+							</select>
+							&nbsp;~&nbsp;
+							<select class="config__select alert-duration" data-type="vue-select2" id="endHour" name="notice_end_hh">
+                                %for i in xrange(24):
+                                    <option ${"selected" if i==23 else ""}>${("0%s" if i<10 else "%s") % i}</option>
+                                %endfor
+							</select>
+							:
+							<select class="config__select alert-duration" data-type="vue-select2" id="endMinute" name="notice_end_mm">
+                                %for i in xrange(60):
+                                    <option ${"selected" if i==59 else ""}>${("0%s" if i<10 else "%s") % i}</option>
+                                %endfor
+							</select>
+                            <label class="config__inputItem">
+                                <span class="data-tip" data-html="true" data-trigger="hover" data-placement="right" data-content="<span class='word-break'>设置告警发出的时间段后，该监控项所产生的异常信息将只会在你所配置的时间段内才发出告警。</span>"><i class="fa fa-question-circle"></i>说明</span>
+                            </label>
+						</div>
+
+					</div>
+				</div>
+			</section>
+
+			<section class="config__btnRow bp_strategy_edit">
+				<button class="king-btn-demo king-btn king-radius king-success king-btn-large" title="保存" id="save">保存</button>
+				<button class="king-btn-demo king-btn king-radius king-default king-btn-large" title="取消" id="cancel">取消</button>
+			</section>
+		</article>
+	</div>
+
+    <script>
+    <%!
+    import json
+    %>
+
+        var host_list = ${json.dumps(host_list)}
+        var monitor_id = ${monitor_id}
+        var alarm_strategy_id = ${alarm_strategy_id}
+        var args_hostindex_id = ${args_hostindex_id}
+        var multiple = ${multiple}
+    </script>
+    <script src="${STATIC_URL}alert/js/configV2/index.js?v=${STATIC_VERSION}"></script>
+    <script src="${STATIC_URL}alert/js/configV2/configure.js?v=${STATIC_VERSION}"></script>

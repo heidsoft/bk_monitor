@@ -1,0 +1,344 @@
+@charset "UTF-8";
+@font-face {
+  font-family: "iconfont";
+  src: url("../../iconfont_new/iconfont.eot?t=1474275930");
+  /* IE9*/
+  src: url("../../iconfont_new/iconfont.eot?t=1474275930#iefix") format("embedded-opentype"), url("../../iconfont_new/iconfont.woff?t=1474275930") format("woff"), url("../../iconfont_new/iconfont.ttf?t=1474275930") format("truetype"), url("../../iconfont_new/iconfont.svg?t=1474275930#iconfont") format("svg");
+  /* iOS 4.1- */ }
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-stroke-width: 0.2px;
+  -moz-osx-font-smoothing: grayscale; }
+
+.icon-tiaojianguolv:before {
+  content: "\e616"; }
+
+.icon-gaojingshijian:before {
+  content: "\e615"; }
+
+.icon-zhujixinxi:before {
+  content: "\e613"; }
+
+.icon-celve:before {
+  content: "\e612"; }
+
+.icon-shitu:before {
+  content: "\e611"; }
+
+.icon-bianji:before {
+  content: "\e60a"; }
+
+.icon-guanbi:before {
+  content: "\e609"; }
+
+.icon-jiantou:before {
+  content: "\e607"; }
+
+.icon-weibiaoti2:before {
+  content: "\e606"; }
+
+.icon-zhiding:before {
+  content: "\e603"; }
+
+.icon-jiantou1:before {
+  content: "\e617"; }
+
+.icon-lingcun:before {
+  content: "\e61a"; }
+
+.icon-zhiding1:before {
+  content: "\e61b"; }
+
+.config__panel .config__panelHead, .config__panel .config__panelContent .config__row {
+  *zoom: 1; }
+  .config__panel .config__panelHead:before, .config__panel .config__panelContent .config__row:before, .config__panel .config__panelHead:after, .config__panel .config__panelContent .config__row:after {
+    content: '';
+    display: table;
+    line-height: 0; }
+  .config__panel .config__panelHead:after, .config__panel .config__panelContent .config__row:after {
+    clear: both; }
+
+* {
+  padding: 0;
+  margin: 0; }
+
+html {
+  height: calc(100% - 50px); }
+
+body {
+  background-color: #ecf0f5;
+  min-width: 1240px; }
+
+.page {
+  position: relative;
+  height: 100%; }
+  .page > header, .page > aside {
+    position: fixed; }
+  .page > header {
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+    border-bottom: 1px solid #ccc;
+    text-align: center;
+    background-color: #fff;
+    z-index: 999; }
+  .page > aside {
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 50px;
+    color: #fff;
+    background-color: #263238;
+    z-index: 999; }
+
+article.content {
+  position: relative;
+  /*margin: 50px 0 0 50px;*/
+  padding: 20px 20px 0 20px;
+  min-width: 1150px;
+  height: 100%; }
+
+.config__inputItem .iCheck-text {
+  vertical-align: middle;
+  padding: 0 30px 0 8px;
+  letter-spacing: 1px;
+  cursor: pointer; }
+.config__inputItem .icheck-img {
+  padding: 0 30px 0 8px;
+  cursor: pointer; }
+
+.h30 {
+  height: 30px; }
+
+.lh-30 {
+  line-height: 30px; }
+
+.va-middle {
+  vertical-align: middle; }
+
+.config__panel {
+  margin-bottom: 15px; }
+  .config__panel .config__panelHead {
+    height: 40px;
+    line-height: 40px;
+    padding-left: 15px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    background-color: #fafafa;
+    color: #666; }
+    .config__panel .config__panelHead .config__panelTitle {
+      height: 100%; }
+      .config__panel .config__panelHead .config__panelTitle .config__panelIcon {
+        color: #ffb400; }
+      .config__panel .config__panelHead .config__panelTitle .config__panelTitle-text {
+        font-size: 14px; }
+    .config__panel .config__panelHead .config__panelTool {
+      height: 39px;
+      padding: 0 8px;
+      border-left: 1px solid #ddd;
+      cursor: pointer; }
+    .config__panel .config__panelHead .config__panelIcon i {
+      font-size: 25px;
+      vertical-align: middle;
+      -webkit-transition: -webkit-transform .3s ease;
+              transition: transform .3s ease;
+      -webkit-transform: rotate(180deg);
+          -ms-transform: rotate(180deg);
+              transform: rotate(180deg); }
+      .config__panel .config__panelHead .config__panelIcon i.icon-jiantou1 {
+        display: block; }
+      .config__panel .config__panelHead .config__panelIcon i.expanded {
+        -webkit-transform: rotate(0deg);
+            -ms-transform: rotate(0deg);
+                transform: rotate(0deg); }
+  .config__panel .config__panelContent {
+    padding: 30px 0 20px 40px;
+    border: 1px solid #ddd;
+    border-top: none;
+    background-color: #fff;
+    color: #666; }
+    .config__panel .config__panelContent .config__row {
+      padding-bottom: 20px; }
+      .config__panel .config__panelContent .config__row .config__panelLabel {
+        position: relative;
+        float: left;
+        min-width: 80px;
+        display: inline-block;
+        font-size: 14px;
+        letter-spacing: 2px;
+        text-align: right; }
+    .config__panel .config__panelContent .config__rowContent {
+      float: left;
+      margin-left: 50px; }
+      .config__panel .config__panelContent .config__rowContent .config__subRowContent {
+        padding: 20px 0 0; }
+        .config__panel .config__panelContent .config__rowContent .config__subRowContent p:last-child {
+          margin: 0; }
+        .config__panel .config__panelContent .config__rowContent .config__subRowContent .config__preLabel {
+          display: table;
+          width: 610px;
+          height: 90px;
+          border: 1px solid #ccc;
+          text-align: center;
+          letter-spacing: 2px; }
+          .config__panel .config__panelContent .config__rowContent .config__subRowContent .config__preLabel:before {
+            display: table-cell;
+            width: 20px;
+            padding: 0 8px;
+            background-color: #cac4b2;
+            color: #fff;
+            vertical-align: middle; }
+      .config__panel .config__panelContent .config__rowContent .config__subRowContent-title {
+        color: #666; }
+      .config__panel .config__panelContent .config__rowContent .config__subRowContent-item .inner-select {
+        width: 110px;
+        line-height: 30px;
+        height: 30px;
+        vertical-align: middle; }
+      .config__panel .config__panelContent .config__rowContent .config__subRowContent-item .inner-input {
+        width: 110px;
+        line-height: 30px;
+        height: 30px;
+        vertical-align: middle;
+        border: 1px solid #ccc;
+        padding: 0 10px;
+        box-shadow: none; }
+
+.config__inputBtn {
+  margin-right: 10px; }
+  .config__inputBtn input[type="radio"] {
+    display: none; }
+    .text-info input[type="radio"]:checked + a {
+      border-color: #2180F5;
+      background-color: #4A9BFF;
+      color: #fff; }
+      .text-info input[type="radio"]:checked + a:hover {
+        background-color: #2180F5; }
+    .text-danger input[type="radio"]:checked + a {
+      border-color: #ff6666;
+      background-color: #d26a5c;
+      color: #fff; }
+      .text-danger input[type="radio"]:checked + a:hover {
+        background-color: #ff6666; }
+    .text-muted input[type="radio"]:checked + a {
+      border-color: #7c7c7c;
+      background-color: #999;
+      color: #fff; }
+      .text-muted input[type="radio"]:checked + a:hover {
+        background-color: #7c7c7c; }
+  .config__inputBtn a {
+    border-color: #cfcfcf;
+    color: #666; }
+
+.config__input {
+  min-width: 110px;
+  height: 30px;
+  line-height: 30px;
+  padding: 0 10px;
+  border: 1px solid #ddd; }
+
+.config__select {
+  width: 310px; }
+  .config__select.alert-duration {
+    width: 60px; }
+
+.config__btnRow {
+  text-align: center;
+  padding-bottom: 30px; }
+  .config__btnRow button {
+    margin-right: 10px;
+    font-size: 14px;
+    letter-spacing: 1px; }
+    .config__btnRow button:last-child {
+      margin: 0; }
+
+.monitor-ip {
+  width: 640px;
+  padding: 8px 15px;
+  resize: none;
+  border-color: #ccc; }
+
+.trigger-setting:before {
+  content: "算法配置"; }
+.trigger-setting .static-threshold,
+.trigger-setting .strategy {
+  display: table-cell;
+  vertical-align: middle; }
+  .trigger-setting .static-threshold .strategy-row,
+  .trigger-setting .strategy .strategy-row {
+    padding: 10px 0;
+    margin: 0; }
+    .trigger-setting .static-threshold .strategy-row .strategy-input,
+    .trigger-setting .strategy .strategy-row .strategy-input {
+      margin: 0 10px;
+      font-size: 0;
+      vertical-align: middle; }
+      .trigger-setting .static-threshold .strategy-row .strategy-input:before,
+      .trigger-setting .strategy .strategy-row .strategy-input:before {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        margin-right: -2px;
+        vertical-align: middle;
+        font-size: 14px;
+        text-align: center;
+        color: #fff; }
+    .trigger-setting .static-threshold .strategy-row .strategy-up:before,
+    .trigger-setting .strategy .strategy-row .strategy-up:before {
+      content: "升";
+      background-color: #00cc66; }
+    .trigger-setting .static-threshold .strategy-row .strategy-up input,
+    .trigger-setting .strategy .strategy-row .strategy-up input {
+      border: 1px solid #00cc66 !important;
+      color: #00cc66;
+      font-size: 12px; }
+    .trigger-setting .static-threshold .strategy-row .strategy-down:before,
+    .trigger-setting .strategy .strategy-row .strategy-down:before {
+      content: "降";
+      background-color: #ff6666; }
+    .trigger-setting .static-threshold .strategy-row .strategy-down input,
+    .trigger-setting .strategy .strategy-row .strategy-down input {
+      border: 1px solid #ff6666 !important;
+      color: #ff6666;
+      font-size: 12px; }
+
+.convergence-rule:before {
+  content: "收敛配置"; }
+.convergence-rule .convergence-ruleA,
+.convergence-rule .convergence-ruleB {
+  display: table-cell;
+  vertical-align: middle; }
+
+.update-btn {
+  min-width: 30px;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  padding: 0;
+  text-align: center;
+  border-color: #ddd;
+  color: #666; }
+
+.config__error {
+  border-color: #fd7170; }
+
+.config__errorMsg {
+  padding-left: 10px;
+  vertical-align: middle;
+  color: #fd7170; }
+
+.required:after {
+  position: absolute;
+  content: '*';
+  color: #fd7170; }
+
+/*# sourceMappingURL=configure.css.map */
+.control-label-style{
+  margin-right: -3px;
+  margin-bottom: 0;
+}

@@ -1,0 +1,39 @@
+<!-- 配置页面样式	 -->
+<link href="${STATIC_URL}alert/css/config.css?v=${STATIC_VERSION}" rel="stylesheet">
+<script src="${STATIC_URL}alert/js/config.js?v=${STATIC_VERSION}"></script>
+<section class="content">
+	<div class="iframe-back fr" style="margin-top: -15px;">
+	    <a class="king-btn king-primary" title="返回" href="###" id="back_btn_id">返回</a>
+	</div>
+	<div class="container-fluid">
+    	<div class="row has-focus">
+    		<div class="box-info mt20">
+				<!--     告警策略 uuid			 -->
+				<input type="hidden" id="s_id" value="${s_id}" />
+				<!-- 	告警策略是否被编辑过			 -->
+                <input type="hidden" id="is_alarm_strategy_edit" value="0"/>
+				<input type="hidden"  id="scenario_id" value="${scenario}"/>
+				
+				<!--     基础配置 start         -->
+                <div class="panel panel-default">
+                    <div class="panel-heading">基础配置</div>
+                    <div id="panel-data" class="panel-body">
+                    	<%block name="base_config"></%block>
+                    </div>
+                </div>
+				<!--     基础配置  end			 -->	
+				<!-- 	告警策略 start			 -->
+				<div class="panel panel-default">
+					<%block name="strategy_config"></%block>
+				</div>
+				<!-- 	告警策略 end	         -->
+				
+				<div class="fr m10">
+			        <button class="king-btn king-success mr10" id="save_config">提交</button>
+			        <button class="king-btn king-default" id="cancel_config">取消</button>
+			    </div>
+    		</div>
+    	</div>
+   </div> 
+</section>
+<%block name="script_config"></%block>

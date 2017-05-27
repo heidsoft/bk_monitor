@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en" style="height:100%;">
+<head>
+    <link rel="icon" href="${STATIC_URL}img/monitor.ico" type="image/x-icon" />
+    <link rel="shortcut icon" href="${STATIC_URL}img/monitor.ico" type="image/x-icon" />
+	<meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <%
+        common_prefix = '%s%s' % (SITE_URL, cc_biz_id)
+        if APP_PATH.startswith(common_prefix + '/bp/'):
+            app_title = u'主机监控'
+        elif APP_PATH.startswith(common_prefix + '/operation_monitor/'):
+            app_title = u'自定义监控'
+        elif APP_PATH.startswith(common_prefix + '/config/'):
+            app_title = u'监控配置'
+        elif APP_PATH.startswith(common_prefix + '/event_center/'):
+            app_title = u'事件中心'
+        elif APP_PATH.startswith(common_prefix + '/datasource/'):
+            app_title = u'数据源接入'
+        else:
+            app_title = u'首页'
+    %>
+    <title>蓝鲸监控|蓝鲸智云社区版</title>
+    <style type="text/css">
+        .star-chart-panel{
+            min-height: initial !important;
+        }
+    </style>
+    <%block name="cssfile"></%block>
+    <%block name="css"></%block>
+</head>
+<body class="sidebar-collapse" style="overflow-y:auto;position:relative;padding-bottom: 60px;height:auto;min-height:100%;margin-top:0;padding-top:50px;">
+<div class="alert-mask hidden"></div>
+    <div id="wrapper">
+        <!-- Navigation -->
+        <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="${SITE_URL}" style="padding-left: 0;">
+                    <img src="${STATIC_URL}img/newlogo.png" class="king-J-icon inline-block">
+                    <span class="logo-lg hidden-xs">Jungle Alert</span>
+                </a>
+            </div>
+            <ol class="breadcrumb" id="breadcrumb">
+                <!--
+                <li>
+                    <a href="${SITE_URL}"><i class="fa fa-home fa-2"></i> 首页</a>
+                </li>
+                <li id="append-bread-2" style="display:none">
+                    <a href="###" id="append-bread-2-a"> </a>
+                </li>
+                -->
+                <li class="active" id="append-bread-1" style=""></li>
+            </ol>
+            <!-- Top Menu Items -->
+            <ul class="nav navbar-right top-nav">
+                <li>
+                    <form class="navbar-form">
+                      <div class="sidebar-menu plugin3_demo" id="plugin3_demo2">
+                          <span class="hidden-xs">当前业务：</span>
+                          <!-- select2 通过javascript start -->
+                          <input type="text" class="select2_box form-control" style="width:230px;">
+                          <!-- select2 通过javascript end -->
+                      </div>
+                    </form>
+                </li>
+                <li>
+                    <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown">
+                        <!-- <i class="fa fa-user"></i>  -->
+                        ${request.user.chname} <b class="caret hide"></b>
+                    </a>
+                </li>
+                <li class="dropdown hidden-xs">
+                    <a id="logout" href="${SITE_URL}account/logout/">注销</a>
+                </li>
+
+            </ul>
+            <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav side-nav">
+                    <li>
+                        <a class="side-li" href="${SITE_URL}${cc_biz_id}/overview/"><i class="fa fa-dashboard"></i> <span class="sidebar-text">首页</span></a>
+                    </li>
+                    <li>
+                        <a class="side-li" href="${SITE_URL}${cc_biz_id}/bp/" data-toggle="collapse" data-target="#demo"><i class="fa fa-hdd-o"></i> <span class="sidebar-text">主机监控</span></a>
+                    </li>
+                    <li>
+                        <a class="side-li" href="${SITE_URL}${cc_biz_id}/operation_monitor/"><i class="fa fa-line-chart"></i> <span class="sidebar-text">自定义监控</span></a>
+                    </li>
+                    <li>
+                        <a class="side-li" href="${SITE_URL}${cc_biz_id}/config/" data-toggle="collapse" data-target="#demo1"><i class="fa fa-cog"></i> <span class="sidebar-text">监控配置</span></a>
+                    </li>
+                    <li>
+                        <a class="side-li" href="${SITE_URL}${cc_biz_id}/datasource/"><i class="fa fa-database"></i> <span class="sidebar-text">数据源接入</span></a>
+                    </li>
+                    <li>
+                        <a class="side-li" href="${SITE_URL}${cc_biz_id}/event_center/"><i class="fa fa-calendar"></i> <span class="sidebar-text">事件中心</span></a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </nav>
+
+        <div id="page-wrapper">
+
+            <div class="container-fluid iframe-container">
+                <div>
+                    <%block name="content">
+                    </%block>
+                </div>
+                <!-- /.row -->
+				## iframe转div
+				<div class="iframe-div" style="display:none;">
+				    <div class="p15">
+<!-- 				        <div class="iframe-back mb15 fr">
+				            <button class="king-btn king-primary">返回</button>
+				        </div> -->
+				        <div id="iframe_body" style="overflow-y: auto;">
+				        </div>
+				    </div>
+				</div>
+				## iframe转div end
+
+            </div>
+            <!-- /.container-fluid -->
+        </div>
+        <!-- /#page-wrapper -->
+    </div>
+    <!-- /#wrapper -->
+    <!-- footer -->
+        <div class="footer-menu text-center" style="position: absolute;bottom: 0;width: 100%;padding-left: 50px;height: 60px;overflow: hidden;">
+            <p>
+                <a href="###" id="contact_us" class="link">QQ咨询</a>
+                    <script src="//wp.qiye.qq.com/loader/4.0.0.js" charset="utf-8"></script>
+                    <script type="text/javascript">
+                       try{
+                          __WPA.create({
+                              nameAccount:"800802001",
+                              customEle: document.getElementById('contact_us')
+                          })
+                       }catch(err){}
+                    </script>
+                | <a href="http://bbs.bk.tencent.com/forum.php" target="_blank" hotrep="hp.footer.feedback" class="link">蓝鲸论坛</a>
+                | <a href="http://bk.tencent.com/" target="_blank" hotrep="hp.footer.feedback" class="link">蓝鲸官网</a>
+                | <a href="${BK_PAAS_HOST}/platform/" target="_blank" hotrep="hp.footer.feedback" class="link">蓝鲸智云工作台</a>
+            </p>
+            <p class="f12">Copyright © 2012-2017 Tencent BlueKing. All Rights Reserved ( 蓝鲸智云 版权所有 )</p>
+        </div>
+
+    <!-- /#wrapper -->
+    ## iframe转div
+	<script>
+	function open_div(url, callback){
+		$iframeW=$('.iframe-container').width();
+		$iframeH=$(window).height()-85;
+		// TODO .iframe-div 中加载 配置页面内容
+		$("#iframe_body").load(url, function(response,status,xhr){
+            $("#iframe_body").css({
+                'height': $iframeH
+            });
+        });
+		$('.iframe-div').css({
+            'margin-top': '-15px',
+		    "width": $iframeW,
+            'min-height':$iframeH
+		}).fadeIn('fast', function() {
+		    ## $(".operation-content").height($('.iframe-div').height()-2);
+##		    $(".iframe-div").siblings().css('display','none');
+		});
+		$(window).resize(function(event) {
+		    $iframeW=$('.iframe-container').width();
+		    $('.iframe-div').css({
+		        "width": $iframeW
+		    });
+            $("#iframe_body").css({
+                'height': $(window).height()-85
+            });
+		});
+        $(window).scrollTop(0);
+        $("body").css("overflow", "hidden");
+        $(window).resize();
+        $('.iframe-back').click(function (){
+            $(".iframe-div").fadeOut('fast',function (){
+                $(this).siblings().css('display','block');
+                $("body").css("overflow", "auto")
+            })
+        })
+	}
+	function close_div(callback){
+		// .iframe-div 中清除 内容
+        $("body").css("overflow", "auto")
+		$("#iframe_body").html('');
+		$('.iframe-div').fadeOut('fast', function() {
+		    ## $(".operation-content").height('auto');
+		    $(".iframe-div").siblings().css('display','block');
+		    // 返回后的回调函数
+		    callback && callback();
+		});
+	}
+	</script>
+	## iframe转div end
+
+    <%block name="iframe_content"></%block>
+    <%block name="scriptfile"></%block>
+    <script>
+    $(function (){
+
+        // 业务选择框 BEGIN
+        var bkArr = [
+            % for biz_id, biz_name in sorted(cc_biz_names.items(), key=lambda x:int(x[0])):
+            { id: ${biz_id}, text: '${biz_name}' },
+            % endfor
+        ];
+        $("#plugin3_demo2 .select2_box").select2({ data: bkArr });
+        $("#plugin3_demo2 .select2_box").on('change',function(e){
+            self.location=site_url+e.val+"/${'/'.join(request.path.replace(SITE_URL, "/").split('/')[2:])}";
+        });
+        $("#plugin3_demo2 .select2_box").select2("val", "${cc_biz_id}");
+        // 业务选择框 END
+    })
+    //打开iframe
+	function openDetailIframe(url){
+		var winWidth = $(window).width();
+		var winHeight = $(window).height();
+		var sidebarWidth = 70;
+		var iframeWidth = winWidth - sidebarWidth;
+		var iframeHeight = winHeight - 50;
+
+		var iframeBox = $('#detailIframe');
+		iframeBox.css({left: sidebarWidth + 'px',width: iframeWidth + 'px', height: iframeHeight+'px'});
+		iframeBox.find('iframe').attr('src', url).load(function(){
+			dialog({id: 'show_tip'}).close();
+			$('#detailIframe').animate({
+				'top' : 50,
+				'opacity' : 'show'
+			}, "fast");
+		});
+
+	};
+	//关闭iframe
+	function closeDetailIframe (callback){
+		$('#detailIframe').animate({
+			'top' : '-100px',
+			'opacity' : 'hide'
+		}, "fast", function(){
+			dialog({id: 'show_tip'}).close();
+			callback && callback();
+		});
+	};
+    function alert_topbar(text, type, timeout){
+        // 顶层tip弹框通知
+        // text 内容
+        // type 类型
+        // 自动消失时间，单位毫秒
+        var topBarTimline = 0;
+        show_bar = function(options) {
+            $div = $("<div class='magic-topbar-container' style='display:none;'></div>");
+            if ((typeof options == 'object') && options.constructor == Object) {
+                // 设置默认值
+                var defaults = {
+                        setClass: 'bg-primary',
+                        close: function() {},
+                        timeOut: 0
+                    };
+                    // 传参设置
+                options = $.extend(defaults, options);
+
+                // 判断页面是否有提示条
+                if ($('.magic-topbar-container').length>0) {
+                    $('.magic-topbar-container').remove();
+                    clearTimeout(topBarTimline);
+                }
+                if ($('.' + options.setClass).length == 0 ) {
+                    // 生成提示条
+                    $div.addClass(options.setClass).appendTo('body').html('<span>' + options.text + '</span>');
+                    // 添加关闭按钮
+                    $div.append('<div class="magic-topbar-close" style="font-size:20px; float:right;margin:-5px -15px 0 0;cursor:pointer;">&times;</div>');
+                    // 阻止冒泡和默认行为
+                    $div.on('click', function() {
+                        return false;
+                    });
+                    // 拉出提示条
+                    $div.slideDown(500);
+                    // 关闭按钮事件
+                    $('.magic-topbar-close').on('click', function() {
+                        var topbar = $(this).parent();
+                        topbar.slideUp(500, function(){
+                            topbar.remove();
+                        });
+                        options.close();
+                        return false;
+                    });
+                    // 设置默认关闭时间
+                    function closeFn() {
+                        $('.magic-topbar-close').trigger('click');
+                        clearTimeout(topBarTimline);
+                    }
+                    if (!options.timeOut == 0 && options.timeOut > 0) {
+                        topBarTimline = setTimeout(closeFn, options.timeOut);
+                    }
+                    // 鼠标移入移出
+                    $div.mouseenter(function() {
+                        clearTimeout(topBarTimline);
+                    });
+                    $div.mouseleave(function() {
+                        if (!options.timeOut == 0 && options.timeOut > 0) {
+                            topBarTimline = setTimeout(closeFn, options.timeOut);
+                        }
+                    })
+                }
+            }
+        };
+        var bar_class = "bg-info";
+        switch (type){
+            case "success":
+            case "ok":
+                bar_class = "bg-success";
+                break;
+            case "error":
+            case "fail":
+            case "danger":
+                bar_class = "bg-danger";
+                break;
+        }
+        show_bar({
+             text: text,
+             setClass:bar_class,
+             timeOut:timeout?timeout:1500,
+             close:function (){
+             }
+         });
+    }
+    function _app_confirm(msg, callback1, callback2) {
+        var d = dialog({
+            width: 260,
+            title: '确认',
+            content: msg,
+            okValue: '确定',
+            ok: function() {callback1()},
+            cancelValue: '取消',
+            cancel: function() {callback2()}
+        })
+        d.show();
+       return d;
+    }
+    function app_confirm(msg, callback) {
+        var d = dialog({
+            width: 260,
+            title: '确认',
+            content: msg,
+            okValue: '确定',
+            ok: function() {callback()},
+            cancelValue: '取消',
+            cancel: function() {}
+        })
+        d.show();
+       return d;
+    }
+    function app_alert(msg, type) {
+        var d = dialog({
+            width: 260,
+            title: '温馨提示',
+            cancel: function (){},
+            ok: function() {},
+            okValue: '确定',
+            cancel: false,
+            content: '<div class="king-notice-box king-notice-'+type+'"><p class="king-notice-text">'+msg+'</p></div>'
+        })
+        d.show();
+        return d;
+    }
+    function app_tip(msg, type) {
+        var d = dialog({
+            width: 260,
+            title: '温馨提示',
+            content: '<div class="king-notice-box king-notice-'+type+'"><p class="king-notice-text">'+msg+'</p></div>'
+        })
+        d.show();
+        return d;
+    }
+    function setCookie(c_name,value,expiredays)
+    {
+        var exdate=new Date()
+            exdate.setDate(exdate.getDate()+expiredays)
+            document.cookie=c_name+ "=" +escape(value)+
+            ((expiredays==null) ? "" : ";path=/;expires="+exdate.toGMTString())
+    }
+    function getCookie(c_name)
+    {
+        if (document.cookie.length>0)
+        {
+            c_start=document.cookie.indexOf(c_name + "=")
+                if (c_start!=-1)
+                {
+                    c_start=c_start + c_name.length+1
+                        c_end=document.cookie.indexOf(";",c_start)
+                        if (c_end==-1) c_end=document.cookie.length
+                            return unescape(document.cookie.substring(c_start,c_end))
+                }
+        }
+        return ""
+    }
+    setCookie("cc_biz_id", "${cc_biz_id}", 60);
+    $(".side-li").each(function(i, value){
+        if ("${request.path}".indexOf($(value).attr("href"))!=-1){
+            $(value).parent().addClass("active");
+            $("#append-bread-1").html($(value).children(".sidebar-text").html());
+        }
+    })
+
+    /* 表单按回车键 触发相应查询按钮
+     * input表单添加 enter-to='id' 指向 查询按钮的id
+     */
+    $('[enter-to]').keydown({},function (event){
+        switch(event.keyCode){
+            case 13:
+            var _id=$(this).attr('enter-to');
+            var searchBtn = $('#'+_id);
+            if(searchBtn.length>0){
+               searchBtn.trigger('click');
+            }
+            break;
+        }
+    })
+    </script>
+    <%block name="script"></%block>
+</body>
+
+</html>

@@ -1,0 +1,433 @@
+<%inherit file="/monitor/base_new.html"/>
+<%block name="css">
+    <!-- 页面用到的css文件 -->
+    <link rel="stylesheet" href="${STATIC_URL}assets/bootstrap-switch-1.2/bootstrapSwitch.css">
+    <link rel="stylesheet" href="${STATIC_URL}assets/daterangepicker-2.0/css/daterangepicker.css">
+    <link rel="stylesheet" href="${STATIC_URL}css/data-source.css">
+    <link rel="stylesheet" href="${STATIC_URL}css/ds-list.css">
+</%block>
+<%block name="content">
+    <div class="iframe-mask hidden"></div>
+    <!-- 页面html内容 -->
+    <article class="content reset-content" id="ds_table">
+        <div class="clearfix ds-tools">
+            <div class="pull-left ds-search">
+                <i class="fa fa-search search-icon"></i>
+                <input type="text" placeholder="输入数据源名称，按回车进行搜索" class="ds-input" v-on:keyup.enter="search" v-model="keyword">
+            </div>
+            <div class="pull-right ds-switchin">
+                <a class="king-btn king-success ds-public-btn" href="${SITE_URL}${cc_biz_id}/datasource/config/0/"><i class="fa fa-plus"></i> 接入数据源</a>
+            </div>
+        </div>
+
+        <section class="ds-list-section">
+            <table class="ds-table ds-table-border ds-list-table" id="mainTable">
+                <thead>
+                    <tr>
+                        <th>名称</th>
+                        <th>状态</th>
+                        <th>关联监控项（量/个）</th>
+                        <th>创建人</th>
+                        <th>创建时间</th>
+                        <th>最后修改时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template v-for="ds in ds_list">
+                        <tr data-ds_id="{{ ds.id }}">
+                            <td>{{ ds.data_desc }}</td>
+                            <td class="ds-text-{{ ds.status | get_status_css_class }}">
+                                {{ ds.status | get_status_display}}
+                                <span v-if="ds.has_exception && ds.status=='normal'" class="table-exclamation ds-text-warning">
+                                    <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+                                    <span class="table-exclamation-content hide">该数据源的上报节点出现异常，请点击进入查看详情。</span>
+                                </span>
+                            </td>
+                            <!--?<td class="ds-text-normal">接入中</td>-->
+                            <!--?<td class="ds-text-error">停用</td>-->
+                            <td>{{ ds.monitor_total }}</td>
+                            <td>{{ ds.creator }}</td>
+                            <td>{{ ds.create_time }}</td>
+                            <td>{{ ds.update_time }}</td>
+                            <td>
+                                <button type="button" class="ds-icon-btn ds-bg-error" data-value="main-preview">
+                                    <i class="fa fa-eye"></i>
+                                </button>
+                                <button type="button" class="ds-icon-btn ds-bg-info" v-on:click="edit_ds(ds.id)" data-value="main-modify">
+                                    <i class="fa fa-pencil"></i>
+                                </button>
+                                <div class="switch switch-mini" data-on-label="启用" data-off-label="停用" data-on="success">
+                                    <input type="checkbox" :checked="ds.status=='normal' || ds.status=='create'" data-disabled="{{ ds.status!='normal' && ds.status!='stopped' }}" data-disabled-msg="{{ ds.status | get_ds_disabled_msg}}" data-type="switch" data-value="ds-list" />
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="7">
+                            <div class="clearfix">
+                                <div class="pull-left ds-footer-paging">
+                                    <ul class="pagination" v-if="pagination_indexs.length>0">
+                                        <li v-bind:class="{'disabled': page==1}">
+                                            <a v-on:click="prev_page" href="javascript:;" aria-label="Previous">
+                                                <span aria-hidden="true">«</span>
+                                            </a>
+                                        </li>
+                                        <template v-for="pagination_index in pagination_indexs">
+                                            <li v-bind:class="{'disabled': pagination_index=='...', 'active': page==pagination_index}">
+                                                <a v-on:click="goto_page(pagination_index)" href="javascript:;">{{ pagination_index }}</a>
+                                            </li>
+                                        </template>
+                                        <li v-bind:class="{'disabled': page==max_page}">
+                                            <a v-on:click="next_page" href="javascript:;" aria-label="Next">
+                                                <span aria-hidden="true">»</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="pull-right ds-footer-text ds-lh-30">
+                                    <span v-if="pagination_indexs.length==0">
+                                        显示条目 0 共 0
+                                    </span>
+                                    <span v-else>
+                                        显示条目 {{ (page-1)*page_size+1 }}-{{ Math.min(page*page_size, total) }} 共 {{ total }}
+                                    </span>
+
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+            <div class="loading hide" id="ds_list_loading">
+                <div class="loading-wrapper">
+                    <img alt="loadding" src="${STATIC_URL}img/hourglass_36.gif">加载中，请稍候
+                </div>
+            </div>
+        </section>
+    </article>
+
+    <article class="side-dialog hidden" id="sideDialog">
+        <div class="side-dialog-close" id="sideDialogClose">关闭</div>
+        <section class="side-dialog-wrapper">
+            <div class="content-wrapper basic-info">
+                <div class="title-block clearfix">
+                    <div class="title-item pull-left">
+                        <img src="${STATIC_URL}img/basic-info.png" alt="基本信息">
+                        <span class="title">基本信息</span>
+                    </div>
+                    <div class="title-item pull-right">
+                        <a class="king-btn king-success pull-right" href="${SITE_URL}${cc_biz_id}/datasource/config/{{ ds_id }}/" title="修改策略">修改策略</a>
+                    </div>
+                </div>
+                <div class="content-block">
+                    <div class="content-row">
+                        <div class="content-left sub-content">
+                            <span class="content-title">
+                                名称：
+                            </span>
+                            <span class="content-detail">
+                                {{ basic_info.data_desc }}
+                            </span>
+                        </div>
+                        <div class="content-right sub-content">
+                            <span class="content-title">
+                                状态：
+                            </span>
+                            <span class="content-detail ds-text-{{ basic_info.status | get_status_css_class }}">
+                                {{ basic_info.status | get_status_display}}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="content-row">
+                        <div class="content-left sub-content">
+                            <span class="content-title">
+                                创建人：
+                            </span>
+                            <span class="content-detail">
+                                {{ basic_info.creator }}
+                            </span>
+                        </div>
+                        <div class="content-right sub-content">
+                            <span class="content-title">
+                                最近修改人：
+                            </span>
+                            <span class="content-detail">
+                                {{ basic_info.update_user }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="content-row">
+                        <div class="content-left sub-content">
+                            <span class="content-title">
+                                创建时间：
+                            </span>
+                            <span class="content-detail">
+                                {{ basic_info.create_time }}
+                            </span>
+                        </div>
+                        <div class="content-right sub-content">
+                            <span class="content-title">
+                                最近修改时间：
+                            </span>
+                            <span class="content-detail">
+                                {{ basic_info.update_time }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-wrapper data-report" id="agent_status">
+                <div class="title-block clearfix">
+                    <div class="title-item pull-left" id="div_agent_status_title">
+                        <img src="${STATIC_URL}img/basic-info.png" alt="数据上报节点">
+                        <span class="title">数据上报节点</span>
+                        <span class="add-record">
+                            <i class="fa fa-plus-square" aria-hidden="true" v-on:click="show_add_agent();"></i>
+                            <span class="hide" id="add_agent_part">
+                                <input type="text" class="ds-input" v-model="agent_status.new_ip" id="new_ip" placeholder="请输入节点IP">
+                                <button type="button" class="king-btn king-default" v-on:click="append_agent()">提交</button>
+                            </span>
+                        </span>
+                    </div>
+                </div>
+                <div class="content-block mt25">
+                    <table class="ds-table ds-table-border ds-list-table ds-table-inner-border" id="">
+                        <thead>
+                            <tr>
+                                <th>节点IP</th>
+                                <th>采集器状态</th>
+                                <th>最后一次上报时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template v-for="data in agent_status.data_list">
+                                <tr>
+                                    <td class="ds-text-{{ data.status | get_agent_status_css_class }}">{{ data.ip }}</td>
+                                    <td class="ds-text-{{ data.status | get_agent_status_css_class }}">{{ data.status | get_status_display }}</td>
+                                    <td>{{ data.update_time }}</td>
+                                    <td>
+                                        <button type="button" class="ds-icon-btn ds-bg-success" v-on:click="refresh_agent(data.ip)" :disabled="['normal', 'exception'].indexOf(data.status)==-1">
+                                            <i class="fa fa-refresh"></i>
+                                        </button>
+                                        <button type="button" class="ds-icon-btn ds-bg-error" v-on:click="remove_agent(data.ip)" :disabled="['normal', 'exception'].indexOf(data.status)==-1">
+                                            <i class="fa fa-times"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="7">
+                                    <div class="clearfix">
+                                        <div class="pull-left ds-footer-paging">
+                                            <ul class="pagination" v-if="agent_status.pagination_indexs.length>0">
+                                                <li v-bind:class="{'disabled': agent_status.page==1}">
+                                                    <a v-on:click="agent_status_prev_page" href="javascript:;" aria-label="Previous">
+                                                        <span aria-hidden="true">«</span>
+                                                    </a>
+                                                </li>
+                                                <template v-for="pagination_index in agent_status.pagination_indexs">
+                                                    <li v-bind:class="{'disabled': pagination_index=='...', 'active': agent_status.page==pagination_index}">
+                                                        <a v-on:click="agent_status_goto_page(pagination_index)" href="javascript:;">{{ pagination_index }}</a>
+                                                    </li>
+                                                </template>
+                                                <li v-bind:class="{'disabled': agent_status.page==agent_status.max_page}">
+                                                    <a v-on:click="agent_status_next_page" href="javascript:;" aria-label="Next">
+                                                        <span aria-hidden="true">»</span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="pull-right ds-footer-text ds-lh-30">
+                                            <span v-if="agent_status.pagination_indexs.length==0">
+                                                显示条目 0 共 0
+                                            </span>
+                                            <span v-else>
+                                                显示条目 {{ (agent_status.page-1)*agent_status.page_size+1 }}-{{ Math.min(agent_status.page*agent_status.page_size, agent_status.total) }} 共 {{ agent_status.total }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    <div class="loading hide" id="ds_agent_loading">
+                        <div class="loading-wrapper">
+                            <img alt="loadding" src="${STATIC_URL}img/hourglass_36.gif">加载中，请稍候
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-wrapper data-detail" id="data_detail">
+                <div class="title-block clearfix">
+                    <div class="title-item pull-left">
+                        <img src="${STATIC_URL}img/data-detail.png" alt="数据明细">
+                        <span class="title">数据明细</span>
+                    </div>
+                    <div class="title-item pull-right clearfix">
+                        <div class="dd-datetimepicker pull-right">
+                            <input type="text" v-model="data_info.date" class="form-control" id="timerange" placeholder="选择日期...">
+                            <span class="icon">
+                                <img src="${STATIC_URL}img/date-icon.png" alt="icon">
+                            </span>
+                        </div>
+                        <div class="sub-title pull-right">查看日期</div>
+                    </div>
+                </div>
+                <div class="content-block mt25">
+                    <table class="ds-table ds-table-border ds-list-table">
+                        <thead>
+                            <tr>
+                                <template v-for="field in field_list">
+                                    <th>{{ field }}</th>
+                                </template>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template v-for="data in data_info.data_list">
+                                <tr>
+                                    <template v-for="field in field_list">
+                                        <td>{{ data[field] }}</td>
+                                    </template>
+                                </tr>
+                            </template>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="7">
+                                    <div class="clearfix">
+                                        <div class="pull-left ds-footer-paging">
+                                            <ul class="pagination" v-if="data_info.pagination_indexs.length>0">
+                                                <li v-bind:class="{'disabled': data_info.page==1}">
+                                                    <a v-on:click="prev_page" href="javascript:;" aria-label="Previous">
+                                                        <span aria-hidden="true">«</span>
+                                                    </a>
+                                                </li>
+                                                <template v-for="pagination_index in data_info.pagination_indexs">
+                                                    <li v-bind:class="{'disabled': pagination_index=='...', 'active': data_info.page==pagination_index}">
+                                                        <a v-on:click="goto_page(pagination_index)" href="javascript:;">{{ pagination_index }}</a>
+                                                    </li>
+                                                </template>
+                                                <li v-bind:class="{'disabled': data_info.page==data_info.max_page}">
+                                                    <a v-on:click="next_page" href="javascript:;" aria-label="Next">
+                                                        <span aria-hidden="true">»</span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="pull-right ds-footer-text ds-lh-30">
+                                            <span v-if="data_info.pagination_indexs.length==0">
+                                                显示条目 0 共 0
+                                            </span>
+                                            <span v-else>
+                                                显示条目 {{ (data_info.page-1)*data_info.page_size+1 }}-{{ Math.min(data_info.page*data_info.page_size, data_info.total) }} 共 {{ data_info.total }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    <div class="loading hide" id="ds_data_loading">
+                        <div class="loading-wrapper">
+                            <img alt="loadding" src="${STATIC_URL}img/hourglass_36.gif">加载中，请稍候
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-wrapper related-monitor">
+                <div class="title-block">
+                    <img src="${STATIC_URL}img/related-monitor.png" alt="关联监控项">
+                    <span class="title">关联监控项</span>
+                </div>
+                <div class="content-block mt25">
+                    <table class="ds-table ds-table-border ds-list-table ds-table-inner-border">
+                        <thead>
+                            <tr>
+                                <th>监控名</th>
+                                <th>监控指标</th>
+                                <th>监控维度</th>
+                                <th>监控周期</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template v-for="monitor in monitor_info.data_list">
+                                <tr>
+                                    <td>{{ monitor.title }}</td>
+                                    <td>{{ monitor.stat_source_info | dispaly_monitor_field }}</td>
+                                    <td>{{ monitor.stat_source_info | dispaly_dimensions }}</td>
+                                    <td>{{ monitor.stat_source_info | dispaly_monitor_freq }}</td>
+                                    <td>
+                                        <button type="button" class="ds-icon-btn ds-bg-info" v-on:click="edit_monitor(monitor.id)" data-value="monitor-list">
+                                            <i class="fa fa-pencil"></i>
+                                        </button>
+                                        <button type="button" class="ds-icon-btn ds-bg-error" v-on:click="delete_monitor(monitor.id)" data-value="monitor-list">
+                                            <i class="fa fa-times"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="7">
+                                    <div class="clearfix">
+                                        <div class="pull-left ds-footer-paging">
+                                            <ul class="pagination" v-if="monitor_info.pagination_indexs.length>0">
+                                                <li v-bind:class="{'disabled': monitor_info.page==1}">
+                                                    <a v-on:click="monitor_prev_page" href="javascript:;" aria-label="Previous">
+                                                        <span aria-hidden="true">«</span>
+                                                    </a>
+                                                </li>
+                                                <template v-for="pagination_index in monitor_info.pagination_indexs">
+                                                    <li v-bind:class="{'disabled': pagination_index=='...', 'active': monitor_info.page==pagination_index}">
+                                                        <a v-on:click="monitor_goto_page(pagination_index)" href="javascript:;">{{ pagination_index }}</a>
+                                                    </li>
+                                                </template>
+                                                <li v-bind:class="{'disabled': monitor_info.page==monitor_info.max_page}">
+                                                    <a v-on:click="monitor_next_page" href="javascript:;" aria-label="Next">
+                                                        <span aria-hidden="true">»</span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="pull-right ds-footer-text ds-lh-30">
+                                            <span v-if="monitor_info.pagination_indexs.length==0">
+                                                显示条目 0 共 0
+                                            </span>
+                                            <span v-else>
+                                                显示条目 {{ (monitor_info.page-1)*monitor_info.page_size+1 }}-{{ Math.min(monitor_info.page*monitor_info.page_size, monitor_info.total) }} 共 {{ monitor_info.total }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    <div class="loading hide" id="ds_monitors_loading">
+                        <div class="loading-wrapper">
+                            <img alt="loadding" src="${STATIC_URL}img/hourglass_36.gif">加载中，请稍候
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </article>
+</%block>
+
+<%block name="script">
+    <!-- 页面js -->
+    <script src="${STATIC_URL}js/bootstrapSwitch.js"></script>
+    <script src="${STATIC_URL}assets/daterangepicker-2.0/js/moment.js"></script>
+    <script src="${STATIC_URL}assets/daterangepicker-2.0/js/daterangepicker.js"></script>
+    <script src="${STATIC_URL}js/datasource.js?v=3"></script>
+</%block>

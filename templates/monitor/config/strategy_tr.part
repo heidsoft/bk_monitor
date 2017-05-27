@@ -1,0 +1,46 @@
+% if not strategy_list:
+	<tr><td colspan="9"style="text-align: center">没有数据</td></tr>
+% else:
+	% for _s in strategy_list:
+        <tr style="color: #787878;" data-alarm_def_id="${_s['alarm_def_id']}">
+            <td><a href="###" onclick="javascript: open_stragety_detail_side('${_s['id']}')">${_s['display_name']}</a></td>
+            <td>${_s['strategy_name']}</td>
+            <td class="word-break">${_s['strategy_desc']}</td>
+            <td><span class='${_s['monitor_level_color']}' style='text-align:center;'><strong>${_s['monitor_level_name']}</strong></span></td>
+            <td>${_s['solution_name']}</td>
+            <td>${_s['notify_way_str']}</td>
+            <td class="gridcell-icon">
+    	    	<div class="flow-text notic-people ">
+	            	<span>${_s['notify_man_html']}</span>
+    	    	</div>
+            </td>
+            <td>${_s['is_enabled_str']}</td>
+            <td>
+				% if _s['is_enabled']:
+					<a href="###" class="grid-a f_r btn btn-xs btn-inverse" title="点击后停用" style="background-color:rgb(221, 221, 221);color:rgb(51, 51, 51) !important" alram_strategy_id="${_s['id']}" data='0' onclick="operate_alarm_strategy(this)"><i class="glyphicon glyphicon-off"></i></a>
+				% else:
+					<a href="###" class="grid-a f_r btn btn-xs btn-success" title="点击后启用" alram_strategy_id="${_s['id']}" data='1' onclick="operate_alarm_strategy(this)"><i class="glyphicon glyphicon-ok"></i></a>
+				% endif
+				
+    			<a href="###" class="grid-a f_r btn btn-xs btn-warning"  title="编辑" onclick="edit_strategy('${_s['id']}')"><i class="glyphicon glyphicon-edit"></i></a>
+        		% if not is_scene_new:
+					<a href="###" class="grid-a f_r btn btn-xs btn-danger" title="删除"  onclick="del_alarm_strategy(this, '${_s['id']}', 'quick' ,get_strategy)"><i class="glyphicon glyphicon-remove"></i></a>
+				% endif
+            </td>
+        </tr>
+	% endfor
+% endif
+<script>
+$(function(){
+	$('.data-tip').popover();
+    try{
+        if (alarm_strategy_id>0){
+            $("tr[data-alarm_def_id="+alarm_strategy_id+"]").find("a").first().click();
+            // only once
+            alarm_strategy_id = 0;
+    ##        $("tr[data-alarm_def_id="+alarm_strategy_id+"]").find("i.glyphicon-edit").click();
+        }
+    }catch (e){}
+
+})
+</script>

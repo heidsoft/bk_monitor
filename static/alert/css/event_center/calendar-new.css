@@ -1,0 +1,125 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.calendar-content .calendar-header, .calendar-content .calendar-date-row {
+  *zoom: 1;
+}
+.calendar-content .calendar-header:before, .calendar-content .calendar-date-row:before, .calendar-content .calendar-header:after, .calendar-content .calendar-date-row:after {
+  content: "";
+  display: table;
+  line-height: 0;
+}
+.calendar-content .calendar-header:after, .calendar-content .calendar-date-row:after {
+  clear: both;
+}
+
+.hidden {
+  display: none;
+}
+
+.calendar {
+  background-color: #fff;
+  font-family: "Microsoft YaHei";
+}
+.calendar .calendar-tool {
+  padding-bottom: 10px;
+  color: #333;
+  font-size: 24px;
+}
+.calendar .calendar-tool button {
+  padding: 0 10px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  line-height: 28px;
+  vertical-align: text-bottom;
+  outline: none;
+}
+.calendar .calendar-tool button:hover {
+  background-color: #fafafa;
+}
+.calendar .calendar-tool .calendar-year-month {
+  margin: 0 10px;
+}
+
+.calendar-content {
+  position: relative;
+}
+.calendar-content .calendar-header {
+  margin-bottom: 10px;
+  padding: 10px 0;
+  background-color: #fafafa;
+  color: #999;
+}
+.calendar-content .calendar-header .calendar-header-item {
+  float: left;
+  width: calc(100% / 7);
+  text-align: center;
+  font-size: 14px;
+}
+.calendar-content .calendar-date-row .calendar-date-item {
+  border-right: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+}
+.calendar-content .calendar-date-row .calendar-date-item:nth-of-type(7) {
+  border-right: none;
+}
+.calendar-content .calendar-date-row:last-child .calendar-date-item {
+  border-bottom: none;
+}
+.calendar-content .calendar-date-item {
+  position: relative;
+  float: left;
+  width: calc(100% / 7);
+  height: 150px;
+}
+.calendar-content .calendar-date-item.not-available {
+  background-color: #e4e4e4;
+}
+.calendar-content .calendar-date-item.calendar-last-month .calendar-date, .calendar-content .calendar-date-item.calendar-next-month .calendar-date {
+  color: #ccc;
+}
+.calendar-content .calendar-date-item .calendar-date-leftTop {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+.calendar-content .calendar-date-item .calendar-date-rightTop {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+.calendar-content .calendar-date-item .calendar-date-leftBottom {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+}
+.calendar-content .calendar-date-item .calendar-date-rightBottom {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
+.calendar-content .calendar-date {
+  position: absolute;
+  font-size: 16px;
+  color: #333;
+}
+.calendar-content .calendar-date.leftTop {
+  left: 10px;
+  top: 10px;
+}
+.calendar-content .calendar-date.leftBottom {
+  left: 10px;
+  bottom: 10px;
+}
+.calendar-content .calendar-date.rightTop {
+  right: 10px;
+  top: 10px;
+}
+.calendar-content .calendar-date.rightBottom {
+  right: 10px;
+  bottom: 10px;
+}

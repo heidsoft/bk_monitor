@@ -1,0 +1,100 @@
+[{
+    "id": 1,
+    "text": "172.17.7.256",
+    "icon":"no-icon",
+    "children": [
+    {
+        "id": 2,
+        "text": "检查系统CPU",
+        "icon":"no-icon",
+        "children": [{
+	        "id": 22,
+	        "icon":"img/tree-warn.png",
+	        "text": "<div class='tree-txt'>CPU1使用率<span class='t1 ml10 text-warning'>65%</span><span class='ml10 t2 text-warning'>-3</span><a data-link='http://www.qq.com' class='tree-detail ml15 text-info'>看看大家是怎么做的？</a></div><button class='tree-btn king-btn king-default king-btn-mini ml15'>忽略</button>"
+	    },
+		{
+	        "id": 23,
+	        "icon":"img/tree-ok.png",
+	        "text": "<div class='tree-txt'>CPU1使用率<span class='t1 ml10 text-warning'>65%</span><span class='ml10 t2 text-success'>85</span><a data-link='http://www.qq.com' class='tree-detail ml15 text-info'>看看大家是怎么做的？</a></div><button class='tree-btn king-btn king-primary king-btn-mini ml15'>详情</button>"
+	    },
+		{
+	        "id": 24,
+	        "icon":"img/tree-cancel.png",
+	        "text": "<div class='tree-txt'>C使用率<span class='t1 ml10 text-warning'>65%</span><span class='ml10 t2 text-warning'>-3</span><a data-link='http://www.qq.com' class='tree-detail ml15 text-info'>看看怎么做的？</a></div><button class='tree-btn king-btn king-default king-btn-mini ml15'>忽略</button>"
+	    }
+	    ]
+    }, 
+    {
+        "id": 3,
+        "text": "Child node 2",
+        "icon":"no-icon"
+    }
+    ]
+},
+{
+    "id": 66,
+    "text": "172.17.7.256",
+    "icon":"no-icon",
+    "children": [
+    {
+        "id":661,
+        "text": "检查系统CPU",
+        "icon":"no-icon",
+        "children": [{
+	        "id": 622,
+	        "icon":"img/tree-warn.png",
+	        "text": "<div class='tree-txt'>CPU1使用率<span class='t1 ml10 text-warning'>65%</span><span class='ml10 t2 text-warning'>-3</span><a data-link='http://www.qq.com' class='tree-detail ml15 text-info'>看看大家是怎么做的？</a></div><button class='tree-btn king-btn king-default king-btn-mini ml15'>忽略</button>"
+	    },
+		{
+	        "id": 623,
+	        "icon":"img/tree-ok.png",
+	        "text": "<div class='tree-txt'>CPU1使用率<span class='t1 ml10 text-warning'>65%</span><span class='ml10 t2 text-success'>85</span><a data-link='http://www.qq.com' class='tree-detail ml15 text-info'>看看大家是怎么做的？</a></div><button class='tree-btn king-btn king-primary king-btn-mini ml15'>详情</button>"
+	    },
+		{
+	        "id": 624,
+	        "icon":"img/tree-cancel.png",
+	        "text": "<div class='tree-txt'>C使用率<span class='t1 ml10 text-warning'>65%</span><span class='ml10 t2 text-warning'>-3</span><a data-link='http://www.qq.com' class='tree-detail ml15 text-info'>看看怎么做的？</a></div><button class='tree-btn king-btn king-default king-btn-mini ml15'>忽略</button>"
+	    }
+	    ]
+    }, 
+    {
+        "id": 6663,
+        "text": "Child node 2",
+        "icon":"no-icon"
+    }
+    ]
+},
+{
+    "id": 771,
+    "text": "172.17.7.256",
+    "icon":"no-icon",
+    "children": [
+    {
+        "id": 772,
+        "text": "检查系统CPU",
+        "icon":"no-icon",
+        "children": [{
+	        "id": 7722,
+	        "icon":"img/tree-warn.png",
+	        "text": "<div class='tree-txt'>CPU1使用率<span class='t1 ml10 text-warning'>65%</span><span class='ml10 t2 text-warning'>-3</span><a data-link='http://www.qq.com' class='tree-detail ml15 text-info'>看看大家是怎么做的？</a></div><button class='tree-btn king-btn king-default king-btn-mini ml15'>忽略</button>"
+	    },
+		{
+	        "id": 7723,
+	        "icon":"img/tree-ok.png",
+	        "text": "<div class='tree-txt'>CPU1使用率<span class='t1 ml10 text-warning'>65%</span><span class='ml10 t2 text-success'>85</span><a data-link='http://www.qq.com' class='tree-detail ml15 text-info'>看看大家是怎么做的？</a></div><button class='tree-btn king-btn king-primary king-btn-mini ml15'>详情</button>"
+	    },
+		{
+	        "id": 7724,
+	        "icon":"img/tree-cancel.png",
+	        "text": "<div class='tree-txt'>C使用率<span class='t1 ml10 text-warning'>65%</span><span class='ml10 t2 text-warning'>-3</span><a data-link='http://www.qq.com' class='tree-detail ml15 text-info'>看看怎么做的？</a></div><button class='tree-btn king-btn king-default king-btn-mini ml15'>忽略</button>"
+	    }
+	    ]
+    }, 
+    {
+        "id":773,
+        "text": "Child node 2",
+        "icon":"no-icon"
+    }
+    ]
+}
+]

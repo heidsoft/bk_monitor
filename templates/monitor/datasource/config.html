@@ -1,0 +1,190 @@
+<%inherit file="/monitor/base_new.html"/>
+<%block name="css">
+    <!-- 页面用到的css文件 -->
+    <link rel="stylesheet" href="${STATIC_URL}assets/artDialog-6.0.4/new/css/artDialog.css">
+    <link rel="stylesheet" href="${STATIC_URL}css/data-source.css">
+    <link rel="stylesheet" href="${STATIC_URL}css/ds-setting.css">
+</%block>
+<%block name="content">
+    <!-- 页面html内容 -->
+    <article class="content reset-content" id="ds_form">
+        <section class="panel-accordion datasource-info">
+            <div class="accordion-header">
+                <div class="title-block">
+                    <img src="${STATIC_URL}img/accordion-icon.png" alt="icon">
+                    <span class="title">数据源信息</span>
+                </div>
+                <div class="tool-block" data-type="panel-collapse">
+                    <i class="fa fa-angle-down"></i>
+                </div>
+            </div>
+            <div class="accordion-content">
+                <div class="instruction-info warning mb25">
+                   <h5>提示说明</h5>
+                   <p>1、采集上报的日志信息最终会存储到DB的数据表中，所以需要由您来配置数据表的英文名；</p>
+                   <p>2、为了更直观的了解数据表的具体用途，请填写数据表的中文名称。</p>
+                </div>
+                <div class="accordion-row">
+                    <span class="row-title">数据表名</span>
+                    <input type="text" name="data_set" v-model="ds_data.data_set" :disabled="ds_id!='0'" placeholder="唯一标识，创建后不可修改" class="ds-input w340">
+                </div>
+                <div class="accordion-row">
+                    <span class="row-title">中文名称</span>
+                    <input type="text" name="data_desc" v-model="ds_data.data_desc" placeholder="请输入数据源的中文名称" class="ds-input w340">
+                </div>
+            </div>
+        </section>
+
+        <section class="panel-accordion log-attr">
+            <div class="accordion-header">
+                <div class="title-block">
+                    <img src="${STATIC_URL}img/accordion-icon.png" alt="icon">
+                    <span class="title">日志上报属性</span>
+                </div>
+                <div class="tool-block" data-type="panel-collapse">
+                    <i class="fa fa-angle-down"></i>
+                </div>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-row crawl-object">
+                    <span class="row-title">采集对象</span>
+                    <textarea name="ips" v-model="ds_data.ips" :disabled="ds_id!='0'" cols="20" rows="3" class="ds-input w340" placeholder="请输入日志所在的主机IP，多个IP以换行分隔"></textarea>
+                </div>
+                <div class="accordion-row">
+                    <span class="row-title">日志路径</span>
+                    <input type="text" name="log_path" v-model="ds_data.log_path" placeholder="请输入日志文件的绝对路径" class="ds-input w340">
+                </div>
+                <div class="accordion-row">
+                    <span class="row-title">日志生成频率</span>
+                    <select name="file_frequency" data-type="select" v-model="ds_data.file_frequency" class="w340" v-bind:class="{ 'gray-text': ds_data.file_frequency=='' }">
+                        <option v-if="ds_id==0" value="" disabled selected>请选择</option>
+                        <option v-for="option in options.file_frequency" style="color: inherit;" v-bind:value="option.value">
+                            {{ option.display }}
+                        </option>
+                    </select>
+                </div>
+                <div class="accordion-row">
+                    <span class="row-title">字符编码</span>
+                    <select data-type="select" name="data_encode" v-model="ds_data.data_encode" class="w340" v-bind:class="{ 'gray-text': ds_data.data_encode=='' }">
+                        <option v-if="ds_id==0" value="" disabled selected>请选择</option>
+                        <option v-for="option in options.data_encode" v-bind:value="option.value">
+                            {{ option.display }}
+                        </option>
+                    </select>
+                </div>
+                <div class="accordion-row">
+                    <span class="row-title">数据分隔符</span>
+                    <select data-type="select" name="sep" v-model="ds_data.sep" class="w340" v-bind:class="{ 'gray-text': ds_data.sep=='' }">
+                        <option v-if="ds_id==0" value="" disabled selected>请选择</option>
+                        <option v-for="option in options.sep" v-bind:value="option.value">
+                            {{ option.display }}
+                        </option>
+                    </select>
+                </div>
+                <div class="accordion-row crawl-range clearfix">
+                    <span class="row-title pull-left pt5">采集范围</span>
+                    <div class="sub-row-wrapper pull-left" data-value="crawl-range-wrapper">
+                        <template v-if="ds_data.conditions.length==0">
+                            <button type="button" class="king-btn king-success ml5 mb15" title="配置" v-on:click="add_condition(0)">配置</button>
+                        </template>
+                        <template v-else>
+                            <template v-for="(index, condition) in ds_data.conditions">
+                                <div class="sub-row">
+                                    <span class="sub-row-item">
+                                        <span class="row-text mr10">当前</span>
+                                        <input type="text" name="condition_index" class="ds-input mr10 w60" v-model="condition.index">
+                                        <span class="row-text mr10">列的值等于</span>
+                                        <input type="text" name="condition_value" class="ds-input mr10 w145" placeholder="" v-model="condition.value">
+                                    </span>
+                                    <span class="sub-row-operator">
+                                        <i class="fa fa-plus add-row" v-on:click="add_condition(index)" data-type="add-row" data-value="crawl-range"></i>
+                                        <i class="fa fa-minus delete-row" v-on:click="remove_condition(index)" data-type="delete-row" data-value="crawl-range"></i>
+                                    </span>
+                                </div>
+                            </template>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel-accordion field-define">
+            <div class="accordion-header">
+                <div class="title-block">
+                    <img src="${STATIC_URL}img/accordion-icon.png" alt="icon">
+                    <span class="title">数据表字段定义</span>
+                </div>
+                <div class="tool-block" data-type="panel-collapse">
+                    <i class="fa fa-angle-down"></i>
+                </div>
+            </div>
+            <div class="accordion-content">
+                <table class="ds-table" id="fieldDefineTable">
+                    <thead>
+                        <tr>
+                            <th class="w60">序号</th>
+                            <th>字段名</th>
+                            <th>中文描述</th>
+                            <th>字段别名</th>
+                            <th>字段类型</th>
+                            <th>时间字段、时区</th>
+                            <th class="w100">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody data-value="field-define-wrapper">
+                        <template v-for="(index, field) in ds_data.fields">
+                            <tr>
+                                <td>{{ index+1 }}</td>
+                                <td class="with-error">
+                                    <input type="text" name="field_name" v-model="field.name" :disabled="ds_id!='0'" class="ds-input" placeholder="表字段的英文名称(必填)">
+                                </td>
+                                <td class="with-error">
+                                    <input type="text" name="field_description" v-model="field.description" class="ds-input" placeholder="字段的中文描述(必填)">
+                                </td>
+                                <td class="with-error">
+                                    <input type="text" name="field_alis" v-model="field.alis" :disabled="ds_id!='0'" class="ds-input" placeholder="别名可为空">
+                                </td>
+                                <td class="with-error">
+                                    <select data-type="select" name="field_type" v-model="field.type" class="w190" v-bind:class="{ 'gray-text': field.type=='' }">
+                                        <option v-if="ds_id==0" value="" disabled selected>请选择</option>
+                                        <option v-for="option in options.field_type" v-bind:value="option.value">
+                                            {{ option.display }}
+                                        </option>
+                                    </select>
+                                </td>
+                                <td class="with-error">
+                                    <input type="radio" name="field_time" v-on:click="set_time_field(index)" :checked="field.time_format!=''" name="test" data-type="icheck">
+                                    <input type="text" class="ds-input ml10" placeholder="yyyy-MM-dd HH:mm:ss" disabled>
+                                    <input type="text" class="ds-input w50 ml10" placeholder="+8" disabled>
+                                </td>
+                                <td v-if="ds_id=='0'">
+                                    <a href="javascript:;" v-on:click="add_field(index)" data-type="add-row" data-value="field-define" class="mr10">新增</a>
+                                    <a v-if="ds_data.fields.length>1" href="javascript:;" v-on:click="remove_field(index)" data-type="delete-row" data-value="field-define" class="ml10">删除</a>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+
+            </div>
+        </section>
+
+        <section class="ds-btn-row">
+            <button id="btn_save" class="king-btn king-success" title="保存">保存</button>
+            <button id="btn_cancel" class="king-btn king-default" title="取消">取消</button>
+        </section>
+
+        <div class="loading hide">
+            <div class="loading-wrapper">
+                <img alt="loadding" src="${STATIC_URL}img/hourglass_36.gif">加载中，请稍候
+            </div>
+        </div>
+    </article>
+</%block>
+
+<%block name="script">
+    <!-- 页面js -->
+    <script src="${STATIC_URL}assets/select2-3.5.2/select2.js"></script>
+    <script src="${STATIC_URL}assets/artDialog-6.0.4/new/js/artDialog.min.js"></script>
+    <script src="${STATIC_URL}js/datasource-config.js"></script>
+</%block>

@@ -1,0 +1,543 @@
+<link rel="stylesheet" href="${STATIC_URL}alert/css/alarm.css">
+<link rel="stylesheet" href="${STATIC_URL}alert/css/alarm2.css">
+<link rel="stylesheet" href="${STATIC_URL}alert/css/alarm3.css">
+
+<style>
+    hr {
+        margin: 10px;
+    }
+    .highcharts-container table{
+        text-align: left;
+        border: 0;
+    }
+    .jtk-node {
+        background-color: #3E7E9C;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        position: absolute;
+        z-index: 11;
+        overflow: hidden;
+        min-width: 80px;
+        min-height: 30px;
+        width: auto;
+    }
+
+    .jtk-node .name {
+        background-color: #3E7E9C;
+        color: #f7ebca;
+        cursor: move;
+        font-size: 13px;
+        line-height: 24px;
+        padding: 6px;
+        text-align: center;
+    }
+
+    .jtk-node .name span {
+        cursor: pointer;
+    }
+
+    .connect1 {
+        padding: 10px;
+        background-color: #84ACB3;
+    }
+
+    .jtk-node .bg_white{
+        background: #3675C5;
+    }
+    .jtk-node  .bg_grey{
+        background: grey;
+    }
+    .jtk-node.bg_white{
+        background: #3675C5;
+    }
+    .jtk-node.bg_grey{
+        background: grey;
+    }
+    .jtk-node .status_success{
+        margin-right:6px;
+        border:1px solid #69C2AF;
+        color: #69C2AF;
+    }
+    .jtk-node .status_fail{
+        margin-right:6px;
+         border:1px solid red;
+        color: red;
+    }
+    .node.success{
+        background-color: #34a263;
+    }
+    .node.failure{
+        background-color: #d9534f;
+    }
+    .node.running{
+        background-color: #2180F5;
+    }
+    .node.noway{
+        background-color: grey;
+    }
+    .node-text{
+        color: white;
+    }
+    .alert_detail_chart_panel_body{
+        border: 1px solid #e9e9e9;
+        padding-top: 10px;
+    }
+    .recover-tab-content{
+        min-height: 10px;
+        border: 0px;
+    }
+    .alert_detail_tab_btn{
+        width: 100%;height: 100%;display:block
+    }
+</style>
+<!-- 告警信息 -->
+<!-- 套入页面后把style样式去掉 -->
+<div class="row" style="margin:0;">
+    <div class="col-md-12">
+		<div class="iframe-back fr">
+		    <a class="king-btn king-primary" title="返回" href="###" id="back_btn_id" onclick="close_div(iframeCallBack)">返回</a>
+		</div>
+         <div class="">
+             <div class="">
+<!--                  <a class="king-btn-demo king-btn king-default fr mt10" title="返回" href="###" id="back_btn_id"  onclick="window.parent.closeDetailIframe(window.parent.iframeCallBack)">
+                    <i class="fa fa-mail-reply-all btn-icon"></i>返回
+                </a> -->
+                <!-- 告警策略 -->
+                <div class="panel panel-default mt50">
+                    <div class="panel-heading panel-heading-fix">
+                        <span class="icon mr5"><i class="fa fa-briefcase"></i></span>
+                        <strong>告警策略</strong>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row alert-way-row">
+                            <div class="col-md-6">
+                                <small><i class="fa fa-square mr10 base-color"></i></small><span class="low-black-color">告警 ID</span>：${alarm.id}
+                            </div>
+                            <div class="col-md-6">
+                                <small><i class="fa fa-square mr10 base-color"></i></small><span class="low-black-color">告警时间</span>：<time>${alarm.source_time}</time>
+                            </div>
+                            <div class="col-md-6">
+                                <small><i class="fa fa-square mr10 base-color"></i></small><span class="low-black-color">监控名称</span>：${alarm.monitor.monitor_name if alarm.monitor else u"无"}
+                            </div>
+                            <div class="col-md-6">
+                                <small><i class="fa fa-square mr10 base-color"></i></small><span class="low-black-color">监控指标</span>：${alarm.monitor.monitor_field_show_name if alarm.monitor else u"无"}
+                            </div>
+                            <div class="col-md-6">
+                                <small><i class="fa fa-square mr10 base-color"></i></small><span class="low-black-color">告警类型：</span>${alarm.get_alarm_type_display()}
+                            </div>
+                            <div class="col-md-6">
+                                <small><i class="fa fa-square mr10 base-color"></i></small><span class="low-black-color">告警级别：</span>${alarm.get_level_display()}
+                            </div>
+                            <div class="col-md-6">
+                                <small><i class="fa fa-square mr10 base-color"></i></small><span class="low-black-color">维度信息</span>：${alarm.get_dimensions_display()}
+                            </div>
+                            <div class="col-md-6">
+                                <small><i class="fa fa-square mr10 base-color"></i></small><span class="low-black-color">触发条件：</span>${alarm.get_raw_display()}
+                            </div>
+                            <div class="col-md-6">
+                                <small><i class="fa fa-square mr10 base-color"></i></small><span class="low-black-color">告警状态：</span><span class="">${alarm.status_html}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 告警策略 end -->
+
+                 <!-- 主视图 -->
+                <div class="panel panel-default connect-view-panel" id="div_main_chart">
+
+                </div>
+                <!-- 主视图 end -->
+                <!-- 关联视图 -->
+                <div class="panel panel-default connect-view-panel" style="display: none" id="div_related_view">
+                    <div class="panel-heading panel-heading-fix relative">
+                        <span class="icon mr5"><i class="fa fa-briefcase"></i></span>
+                        <strong>关联视图</strong>
+                        <ul class="inline-block pull-right tab-list" id="ul_related_views"></ul>
+                    </div>
+                    <div class="panel-body">
+                        <div class="tab-content" id="div_related_views_content">
+                            <div class="tc bc pt15 pb15 loading-box">
+                                <!-- 加载动画一-7 Start -->
+                                <img alt="loadding" src="${STATIC_URL}img/loading_2_24x24.gif">
+                                <!-- 加载动画一-7 End -->加载中,请稍候...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 关联视图 end -->
+
+             </div>
+             <!-- panel-body end -->
+         </div>
+        <!-- panel end -->
+    </div>
+    <!-- col end -->
+</div>
+<!-- row end -->
+##<script src="${STATIC_URL}alert/js/dagre.min.js"></script>
+##<script src="${STATIC_URL}alert/js/bkTopology.js"></script>
+<script src="${STATIC_URL}alert/js/dataview/graph-highcharts.js"></script>
+<script src="${STATIC_URL}alert/js/dataview/operation.js"></script>
+<script src="${STATIC_URL}alert/js/dataview/operation_monitor.js"></script>
+<script>
+
+$('#bktopo').on('click','.fa-refresh', function(e){
+    var nodes = bk.getNodes()
+    for(var i in nodes){
+        if(nodes[i].id == $(this).attr('data-node-id')){
+            retry_flow(${alarm.id}, i)
+            break;
+        }
+    }
+});
+
+
+//终止流程
+function stop_flow(id) {
+    if (confirm("是否确定终止?")) {
+        $.getJSON("${SITE_URL}stop/flow/", {
+            id: id,
+        }, function (feedback) {
+            if (feedback.result) {
+                alert("终止成功")
+            } else {
+                alert("终止失败:"+feedback.message)
+            }
+        })
+    }
+}
+
+
+//重试流程
+function retry_flow(id, node_index) {
+    if (confirm("是否确定从#"+node_index+"节点开始重试?")) {
+        $.getJSON("${SITE_URL}retry/flow/", {
+            id: id,
+            node_index: node_index
+        }, function (feedback) {
+            if (feedback.result) {
+                alert("成功开始重试")
+            } else {
+                alert("重试失败:"+feedback.message)
+            }
+        })
+    }
+}
+
+//审批通过
+function approve_flow(id, approve) {
+    if($("#approve_text").val()!=""){
+        $.getJSON("${SITE_URL}approve/flow/", {
+            id: id,
+            message: $("#approve_text").val(),
+            approve: approve
+        }, function (feedback) {
+            if (feedback.result) {
+                alert("审批成功")
+            } else {
+                alert("审批失败:"+feedback.message)
+            }
+        })
+    }else{
+        alert("请输入审批意见")
+    }
+}
+
+</script>
+
+<!-- 以下为告警详情的关联视图相关逻辑 -->
+<script type="text/x-kendo-template" id="tpl_related_view_tab_content">
+    <div class="row connect-view-row tab-pane fade in # if(active){#active#}#" id="related_view_tab_#:id#">
+        #for(var index = 0;index < charts.length;index++){#
+            <div class="col-md-6 alert_detail_sub_chart_container" id="div_alert_detail_sub_chart_#:index#">
+                <div class="king-block king-block-bordered mb15">
+                    <div class="king-block-header king-gray-light pl10">
+                        <h3 class="king-block-title">
+                            <span class="monitor-title">#:charts[index]['chart_title']#</span>
+                        </h3>
+                    </div>
+                    <div class="alert_detail_chart_panel_body p0">
+                        <div class="alert_detail_sub_chart king-block-content-chart" style="height:200px;width:100%;"
+                             alarm_id="#:charts[index]['alarm_id']#"
+                             monitor_id="#:charts[index]['monitor_id']#" chart_status="init">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        #}#
+    </div>
+</script>
+
+<script type="text/x-kendo-template" id="tpl_related_view_tab_content_alert">
+    <div class="tab-pane fade in # if(active){#active#}#" id="related_view_tab_#:id#" style="padding: 10px">
+        <div class="king-notice2 king-notice-warning notice-borders">
+            <i class="fa fa-exclamation-circle"></i>
+            <div class="notice-text">
+                <p>#:message#</p>
+            </div>
+        </div>
+    </div>
+</script>
+<script type="text/x-kendo-template" id="tpl_alert_msg">
+    <div class="king-notice2 king-notice-warning notice-borders">
+        <i class="fa fa-exclamation-circle"></i>
+        <div class="notice-text">
+            <p>#:message#</p>
+        </div>
+    </div>
+</script>
+<script type="text/x-kendo-template" id="tpl_related_view_tab_content_loading">
+    <div class="tc bc pt15 pb15 loading-box">
+        <!-- 加载动画一-7 Start -->
+        <img alt="loadding" src="${STATIC_URL}img/loading_2_24x24.gif">
+        <!-- 加载动画一-7 End -->加载中,请稍候...
+    </div>
+</script>
+<script type="text/x-kendo-template" id="tpl_related_view_tab_nav">
+    <li # if(active){#class="active"#}#>
+        <a href="\#related_view_tab_#:id#" data-toggle="tab" onclick="javascript:refresh_view_charts('#:id#')">#:title#</a>
+    </li>
+</script>
+<script type="text/x-kendo-template" id="tpl_main_chart">
+    <div class="panel-heading panel-heading-fix relative">
+        #:main_chart['chart_title']#
+    </div>
+    <div class="panel-body">
+        <div class="alert_detail_chart_panel_body p0">
+            <div class="alert_detail_main_chart king-block-content-chart" style="height:300px;width:100%;"
+                 alarm_id="#:main_chart['alarm_id']#"
+                 monitor_id="#:main_chart['monitor_id']#" chart_status="init">
+            </div>
+        </div>
+    </div>
+</script>
+<script>
+    Highcharts.setOptions({global: { useUTC: false } });
+
+
+    function refresh_related_views(){
+        debugger
+        $("#ul_related_views").html('');
+        $("#div_main_chart").html(kendo.template($("#tpl_related_view_tab_content_loading").html())({}));
+        $("#div_related_views_content").html(kendo.template($("#tpl_related_view_tab_content_loading").html())({}));
+        $.getJSON("${SITE_URL}get_alarm_detail_chart_list/", {
+            alarm_id: ${alarm.id},
+            biz_id: ${cc_biz_id}
+        }, function (response) {
+            var nav_html = '';
+            var main_chart_content = '';
+            var content_html = '';
+            var dft_id = 0;
+            if (response.result) {
+                var main_chart = response.data.main_chart;
+                var views = response.data.views;
+                main_chart_content = kendo.template($("#tpl_main_chart").html())({"main_chart": main_chart});
+                if((!views) || (views.length < 1)){
+                    content_html = kendo.template($("#tpl_related_view_tab_content").html())({
+                        "active": true,
+                        "id": dft_id,
+                        "main_chart": main_chart,
+                        "charts": []
+                    });
+                }else{
+                    var show_views = false;
+                    for(var i = 0;i < views.length;i++){
+                        var view = views[i];
+                        if(view.charts.length < 1){
+                            continue
+                        }
+                        show_views = true;
+                        view['main_chart'] = main_chart;
+                        view['active'] = (i == 0);
+                        if(i==0){
+                            dft_id = view.id;
+                        }
+                        nav_html += kendo.template($("#tpl_related_view_tab_nav").html())(view);
+                        content_html += kendo.template($("#tpl_related_view_tab_content").html())(view);
+                    }
+                    if(show_views){
+                        $("#div_related_view").show();
+                    }
+                }
+            } else {
+                content_html = kendo.template($("#tpl_related_view_tab_content_alert").html())({
+                    "active": true,
+                    "id": dft_id,
+                    "message": response.message
+                });
+                main_chart_content = content_html
+            }
+            $("#div_main_chart").html(main_chart_content);
+            $("#ul_related_views").html(nav_html);
+            $("#div_related_views_content").html(content_html);
+            refresh_main_chart();
+            if (response.result) {
+                refresh_view_charts(dft_id);
+            }
+        });
+    }
+
+    function refresh_view_charts(view_id){
+        //取出这个view里面所有init状态的图
+        sub_chart_container = $("#related_view_tab_" + view_id).find(".alert_detail_sub_chart[chart_status=init]");
+
+        sub_chart_container.each(function(index, container){
+            render_alert_detail_chart(container, 'sub');
+        });
+    }
+
+    function refresh_main_chart(){
+        //取出这个view里面所有init状态的图
+        main_chart_container = $("#div_main_chart").find(".alert_detail_main_chart[chart_status=init]");
+        main_chart_container.each(function(index, container){
+            render_alert_detail_chart(container, 'main');
+        });
+    }
+
+    function render_alert_detail_chart(container, chart_type){
+        $(container).html('<img alt="loadding" src="'+static_url+'img/hourglass_36.gif" style="margin-top: 100px;margin-left:45%;">');
+        var alarm_id = $(container).attr("alarm_id");
+        var monitor_id = $(container).attr("monitor_id");
+        var query_url = "${SITE_URL}get_alarm_detail_main_chart_data/";
+        if(chart_type == 'sub'){
+            query_url = "${SITE_URL}get_alarm_detail_sub_chart_data/"
+        }
+        $.getJSON(query_url, {
+            alarm_id: alarm_id,
+            monitor_id: monitor_id,
+            biz_id: ${cc_biz_id}
+        }, function (response) {
+            $(container).html('');
+            if (response.result) {
+                Hchart.make_graph(response.data, container);
+                if(response.alarm_info){
+                    //打上这个告警的红点
+                    var alert_data = response.alarm_info;
+                    handle_alert_point($(container).parent(), alert_data)
+                }
+            } else {
+                $(container).html(kendo.template($("#tpl_alert_msg").html())(response));
+            }
+        });
+    }
+
+    function handle_alert_point(contain, alert_data){
+        alert_list = [];
+        // 一般
+        var info_alerts = alert_data["1"];
+        Array.prototype.push.apply(alert_list, info_alerts);
+        // 预警
+        var warning_alerts = alert_data["2"];
+        Array.prototype.push.apply(alert_list, warning_alerts);
+        // 严重
+        var critical_alerts = alert_data["3"];
+        Array.prototype.push.apply(alert_list, critical_alerts);
+        // 已处理
+        var handled_alerts = alert_data["handled"];
+        // 未处理
+        var unhandled_alerts = alert_data["unhandled"];
+        var event_info ={0:{}, 1:{}};
+        // format event source_time
+        for (var i=0;i<alert_list.length;i++){
+            var alert = alert_list[i];
+            var series_index = 0;
+            var event_points = [];
+            var event_point = get_graph_nearest_timepoint_alert_detail(contain, 0, alert.source_timestamp);
+            if(!event_point){
+                continue
+            }
+            event_points.push(event_point);
+            var event_timestamp = event_point.x;
+            event_info[series_index][event_timestamp] = {
+                alert_ids: [alert.id],
+                alert: alert,
+                event_points: event_points,
+                count: 1
+            }
+
+        }
+        // add_alert to series
+        for (series_index in event_info){
+            if (event_info.hasOwnProperty(series_index)){
+                for (event_timestamp in event_info[series_index]){
+                    if (event_info[series_index].hasOwnProperty(event_timestamp)){
+                        add_alert_point_detail_view(contain, event_info[series_index][event_timestamp])
+                    }
+                }
+            }
+        }
+    }
+
+    function get_graph_nearest_timepoint_alert_detail(contain, series_index, timepoint){
+        var chart_obj = contain.find(".king-block-content-chart").highcharts();
+        // 获取图表上，时间点最接近的时间点
+        var _sort_array = [];
+        $.extend(_sort_array, chart_obj.series[series_index].xData);
+        _sort_array.push(timepoint);
+        _sort_array.sort(function(a, b){return a-b});
+        var xaxis_index = _sort_array.indexOf(timepoint);
+        return chart_obj.series[series_index].points[xaxis_index];
+    }
+
+    function add_alert_point_detail_view(contain, event_info){
+        var event = event_info.alert;
+        var count = event_info.count;
+        var alert_point = event_info.event_points[0];
+        var alert_ids = event_info.alert_ids;
+        var panel = contain.find("div.king-block-content-chart");
+        // 根据series条数判断是否是过滤查询，过滤查询显示过滤过的时间，非过滤查询显示全部事件
+        var chart_obj = $(panel).highcharts();
+        // add new series
+        var alert_series = chart_obj.addSeries({
+            zIndex: 10,
+            cursor: 'pointer',
+            marker: {
+                symbol: 'circle',
+                radius: 6
+            },
+            color: event_color(event.level.toString()),
+            name: event.id,
+            data: [[alert_point.x, alert_point.y]],
+            showInLegend: false,
+            tooltip: {
+                followPointer: false,
+                followTouchMove: false,
+                pointFormatter: function(){
+                    var event_count_msg = (count&&count>1)? "共"+count+"条": "";
+                    var handle_status = event.handled?'<span class="ok-tooltip">(已处理)</span>':'<span class="error-tooltip">(未处理)</span>';;
+                    return '<tr><td>'+make_alert_count_display(event)+' </td></tr><br>'+
+                        '<tr><td>影响范围：'+event.dimensions_display+'</td></tr>' +
+                        '<tr><td>告警描述：'+event.raw+'</td></tr>'+
+                        '<tr><td>辅助参考：无</td></tr>'+
+                        '<tr><td><br> </td></tr>';
+                }
+            }
+        }, false);
+        for (var i=0; i < event_info.event_points.length; i++){
+            event_info.event_points[i].remove();
+        }
+    }
+    function make_alert_count_display(event){
+        // 生成告警事件条数说明
+        if (event.alert_count == 1){
+            return "发生一条"+ level_html_display(event) + "告警";
+        }
+        var alert_count_info = event.alert_count_info;
+            var msg = "同时发生多条告警<br>共计：";
+            for (var i=1; i<=3; i++){
+                if (alert_count_info[i] > 0){
+                    msg += alert_count_info[event.level] + "条 " + level_html_display(event) + (i==3?"":"/")
+                }
+            }
+        return msg
+    }
+
+    $(function(){
+        refresh_related_views();
+    });
+
+
+
+</script>
+<!-- 告警详情的关联视图相关逻辑结束 -->

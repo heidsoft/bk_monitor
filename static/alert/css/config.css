@@ -1,0 +1,151 @@
+/* 配置页面样式文件 */
+.word-break{word-wrap: break-word;}
+.help-block {
+    border-bottom: none;
+    color: #AAA6A6;
+    font-size: 14px;
+}
+.config-tilte{
+    padding-bottom: 5px;
+    border-bottom: 1px dotted #ddd;
+    margin-bottom: 15px;
+    margin-top: 30px;
+    font-size: 16px;
+    font-weight: bold;
+}
+.more{
+	font-size: 12px;
+	font-weight: 400;
+}
+.required{
+    margin-left: 4px;
+	/*color: #f00;*/
+}
+.error {
+    display: inline;
+    margin-top: 3px;
+    margin-left: 10px;
+    color: #b94a48;
+    display: inline-block;
+}
+.config-radio{
+	margin-left: 15px;
+}
+
+/* 设置按钮样式 start */
+.some-label{position: relative;z-index: 9;}
+.box-inpnt-label{
+	position: absolute;
+	left: 105%;
+	width: 300px;
+	height: auto;
+	display: none;
+	transform: translateY(-50%);
+	-o-transform: translateY(-50%);
+	-ms-transform: translateY(-50%);
+	-moz-transform: translateY(-50%);
+	-webkit-transform: translateY(-50%);
+	box-shadow: 0px 0px 10px 0px #ddd;
+	-o-box-shadow: 0px 0px 10px 0px #ddd;
+	-ms-box-shadow: 0px 0px 10px 0px #ddd;
+	-moz-box-shadow: 0px 0px 10px 0px #ddd;
+	-webkit-box-shadow: 0px 0px 10px 0px #ddd;
+}
+.box-inpnt-label .box-input-close{
+	position: absolute;
+	right: 5px;
+	top: 5px;
+}
+.box-inpnt-label .box-input-close span{
+	display: inline-block;
+	width: 20px;
+	height: 20px;
+	line-height: 20px;
+	text-align: center;
+	border-radius: 100%;
+	-o-border-radius: 100%;
+	-ms-border-radius: 100%;
+	-moz-border-radius: 100%;
+	-webkit-border-radius: 100%;
+	background: #F00C0C;
+	color: #fff;
+	cursor: pointer;
+}
+.box-inpnt-label td,.box-inpnt-label th{
+	border-right: 1px solid #ddd;
+}
+.box-inpnt-label .table{
+	width: 100%;
+	border:1px solid #ddd;
+	margin-bottom: 0;
+}
+.box-inpnt-label td:nth-child(1){
+	padding: 14px 8px;
+}
+.box-inpnt-label td:nth-child(2){
+	width: 60%;
+}
+.box-inpnt-label input[type="text"]{
+	width: 100%;
+	border:1px solid #ddd !important;
+}
+.box-inpnt-label td>div{
+	position: relative;
+}
+.box-inpnt-label th{
+    text-align: center;
+}
+.box-inpnt-label td>div span{
+	display: inline-block;
+	position: absolute;
+	right: -65px;
+	top: 8px;
+	color: #ff0000;
+	font-size: 12px;
+	display: none;
+}
+.box-input-in input[type="text"]{
+	width: 90%;
+	font-size: 14px;
+	height: 33px;
+	padding: 3px 10px;
+	border:1px solid #ddd !important;
+}
+.box-input-in label{
+	display: inline-block;
+	font-size: 14px;
+	text-align: center;
+	border:1px solid #ddd;
+	cursor: pointer;
+	width: 100%;
+	text-align: center;
+	line-height: 32px;
+	margin-bottom: 0;
+}
+.cur-color{
+	color: #5c90d2;
+}
+/* 设置按钮样式  end */
+
+/* dialog start */
+.ui-dialog-footer button {
+    float: right;
+    font-size: 13px;
+}
+.ui-dialog-footer button+button {
+    margin-bottom: 0;
+    margin-right: 5px;
+    float: left;
+}
+.ui-dialog-footer button {
+font-size:12px;
+line-height:18px;
+}
+/* dialog end */
+
+/* 通知方式样式  strat */
+.gridcell-icon i{margin-right: 5px;font-size: 16px;}
+.gridcell-icon i.weixin{color: #92cb3f;}
+.gridcell-icon i.rtx{color: #027dfa;font-size: 15px;}
+.gridcell-icon i.phone{font-size: 16px;}
+/* 通知方式样式  end */

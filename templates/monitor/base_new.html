@@ -1,0 +1,54 @@
+<%inherit file="/base.html"/>
+<%block name="cssfile">
+    <!-- Bootstrap css -->
+    <link href="${STATIC_URL}assets/bootstrap-3.3.4/css/bootstrap.min.css" rel="stylesheet">
+    <link href="${STATIC_URL}assets/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <!-- 当前项目样式文件 -->
+    <link href="${STATIC_URL}css/sb-admin.css" rel="stylesheet">
+    <link href="${STATIC_URL}css/sb-bk-theme.css" rel="stylesheet">
+    <!--蓝鲸提供的公用样式库 -->
+    <link href="${STATIC_URL}css/bk.css" rel="stylesheet">
+    <!--前端开发者提供的样式 -->
+    <link href="${STATIC_URL}css/alert.css" rel="stylesheet">
+    <!--后端开发者提供的样式 -->
+    <link href="${STATIC_URL}assets/artDialog-6.0.4/css/ui-dialog.css" rel="stylesheet">
+    <link href="${STATIC_URL}assets/select2-3.5.2/select2.css" rel="stylesheet">
+    <!-- 左侧下拉搜索导航栏 -->
+    <link href="${STATIC_URL}assets/jquery.sumoselect-2.0.0/sumoselect.css" rel="stylesheet">
+    <link href="${STATIC_URL}assets/mCustomScrollbar-3.0.9/jquery.mCustomScrollbar.css" rel="stylesheet">
+
+    <!-- 如果要使用Bootstrap的js插件，必须先调入jQuery -->
+    <script src="${STATIC_URL}js/jquery-1.10.2.min.js"></script>
+    <!-- 包括所有bootstrap的js插件或者可以根据需要使用的js插件调用　-->
+    <script src="${STATIC_URL}assets/bootstrap-3.3.4/js/bootstrap.min.js"></script>
+</%block>
+<%block name="iframe_content">
+	<!--    iframe      -->
+    <div id="detailIframe" style="background-color: rgb(255, 255, 255);position:fixed;width:100%;height:100%;display:none;z-index: 1002;">
+<!--          <a class="king-btn king-primary fr mt10" title="返回" href="###" id="back_btn_id"  onclick="closeDetailIframe(iframeCallBack)">
+		    <i class="fa fa-mail-reply-all btn-icon"></i>返回
+		</a> -->
+		<iframe frameborder="0" id="detail_frame" name="detail_frame" src="" style="width:100%;height:100%;overflow:auto;"></iframe>
+	</div>
+</%block>
+<%block name="scriptfile">
+	<!-- 这个是全局配置，如果需要在js中使用app_code和site_url,则这个javascript片段一定要保留 -->
+	<script type="text/javascript">
+		var app_code = "${APP_CODE}";			// 在蓝鲸系统里面注册的"应用编码"
+		var site_url = "${SITE_URL}";			// app的url前缀,在ajax调用的时候，应该加上该前缀
+        var static_url = "${STATIC_URL}";
+        var cc_biz_id = "${cc_biz_id}";
+        var page_load_count = 0;
+	</script>
+
+    <!--配置js  勿删-->
+    <script src="${STATIC_URL}js/settings.js"></script>
+    <script src="${STATIC_URL}assets/topbar-1.0/topbar.js"></script>
+    <script src="${STATIC_URL}assets/select2-3.5.2/select2.js"></script>
+    <script src="${STATIC_URL}assets/artDialog-6.0.4/dist/dialog-min.js"></script>
+    <script src="${STATIC_URL}assets/jquery.sumoselect-2.0.0/jquery.sumoselect.min.js"></script>
+    <script src="${STATIC_URL}js/vue.min.js"></script>
+    <script src="${STATIC_URL}js/utils.js"></script>
+</%block>
+<%block name="script">
+</%block>

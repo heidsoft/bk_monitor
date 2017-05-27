@@ -1,0 +1,85 @@
+.detail-row, .detail-row .detail-left, .detail-row .detail-right {
+  *zoom: 1; }
+  .detail-row:before, .detail-row .detail-left:before, .detail-row .detail-right:before, .detail-row:after, .detail-row .detail-left:after, .detail-row .detail-right:after {
+    content: "";
+    display: table;
+    line-height: 0; }
+  .detail-row:after, .detail-row .detail-left:after, .detail-row .detail-right:after {
+    clear: both; }
+
+.lh-30 {
+  line-height: 30px; }
+
+.h-30 {
+  height: 30px; }
+
+th{
+    text-align: center;
+}
+
+.pre-span {
+  display: inline-block;
+  width: 70px;
+  height: 30px;
+  line-height: 30px;
+  margin-right: -6px;
+  vertical-align: middle;
+  text-align: center;
+  color: #fff;
+  background-color: #cdcfd4;
+  font-size: 14px; }
+
+.strategy-detail {
+  background-color: #fafafa;
+  border-bottom: 1px solid #e5e5e5; }
+
+.alert-event table thead td {
+  background-color: #fcfcfc;
+  font-size: 14px;
+  color: #666;
+  font-weight: bold; }
+.alert-event table .alert-condition {
+  width: 60%;
+  text-align: left;
+  padding: 10px 20px; }
+  .alert-event table .alert-condition p {
+    margin: 0; }
+.alert-event table .alerted {
+  color: #24c36f; }
+.alert-event table .not-alerted {
+  color: #ffc600; }
+
+.detail-row {
+  padding-bottom: 30px; }
+  .detail-row .detail-left {
+    float: left;
+    width: 50%; }
+  .detail-row .detail-right {
+    float: right; }
+  .detail-row .subtitle, .detail-row .subcontent {
+    float: left;
+    font-size: 14px; }
+  .detail-row .subtitle {
+    width: 100px;
+    text-align: right;
+    color: #666; }
+  .detail-row .subcontent {
+    width: calc(100% - 100px);
+    padding-left: 25px;
+    color: #999;
+    letter-spacing: 1px; }
+    .detail-row .subcontent .side-select,
+    .detail-row .subcontent .alert__input {
+      width: 140px; }
+  .detail-row .sideContent-role {
+    float: left;
+    height: 30px;
+    line-height: 30px;
+    padding: 0 10px;
+    margin: 0 5px 0 0;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    color: #999; }
+  .detail-row .alert-serious {
+    color: #ff6666;
+    font-weight: bold; }

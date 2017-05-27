@@ -1,0 +1,60 @@
+.new-strategy .title img {
+  vertical-align: middle;
+}
+.new-strategy.info-item {
+  background-color: #fff;
+  border: none;
+}
+.new-strategy .subcontent + .subcontent {
+  margin-top: 20px;
+  margin-left: 100px;
+}
+.new-strategy .config__btnRow {
+  text-align: left;
+  padding-left: 125px;
+}
+.new-strategy .detail-left {
+  width: auto;
+}
+.new-strategy .new-date {
+  float: left;
+  width: 200px;
+}
+.new-strategy .new-select {
+  width: 310px;
+}
+.new-strategy .subcontent-row {
+  margin-bottom: 15px;
+  letter-spacing: -4px;
+}
+.new-strategy .subcontent-row > * {
+  letter-spacing: 0;
+}
+.new-strategy .subcontent-row .alert__input {
+  margin-right: 10px;
+}
+.new-strategy .pre-span {
+  width: 115px;
+  background-color: #b2c0ca;
+}
+.new-strategy .side-select {
+  width: 105px !important;
+  margin-right: 4px;
+}
+.new-strategy .operator-row {
+  letter-spacing: -4px;
+}
+.new-strategy .new-operator {
+  cursor: pointer;
+  vertical-align: sub;
+}
+.new-strategy .new-operator i {
+  font-size: 22px;
+  margin-right: 10px;
+}
+.new-strategy .new-delete {
+  color: #ff6666;
+}
+.new-strategy .new-add {
+  color: #00cc66;
+}

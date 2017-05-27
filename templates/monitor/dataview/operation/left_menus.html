@@ -1,0 +1,28 @@
+
+        <h5>
+        <span class="text-over ml15"> <span class="icon mr5"><i class="fa fa-th-list"></i></span><strong>监控分组</strong> </span>
+            <a class="king-btn king-btn-icon king-radius king-default add-one mt5 mr5" data-placement="" title="新增分组">
+                <i class="fa fa-plus"></i>
+            </a>
+            <i class="fa fa-spinner fa-pulse mr5" id="menu_loading"></i>
+        </h5>
+        <div class="menu-list-ul">
+            <ul class="scene-list">
+                %for menu in menus:
+                    ## 隐藏关注菜单
+                    %if menu.system_menu != "favorite":
+                    <li>
+                        <a class="text-over scenario-value" style="cursor:auto;" data-menu_id="${menu.id}" href="javascript:">${menu.name}</a>
+                        <input type="text" class="form-control" data-placement="bottom" value="${menu.name}" data-toggle="tooltip" title="">
+                        %if menu.allowed_edit:
+                        <span class="edit-icon">
+                            <i class="fa fa-edit ml5"></i>
+                            <i class="fa fa-check ml5"></i>
+                            <i class="fa fa-close ml5"></i>
+                        </span>
+                        %endif
+                    </li>
+                    %endif
+                %endfor
+            </ul>
+        </div>

@@ -1,0 +1,4 @@
+<!-- 基础性能去掉监控源，只渲染监控  -->
+<script>
+function get_result_table(){}
+</script>

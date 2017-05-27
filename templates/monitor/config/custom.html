@@ -1,0 +1,210 @@
+<%inherit file="/monitor/config/base_config.html"/>
+<%block name="base_config">
+	<input type="hidden" id="is_scene" value=""/>
+	<!-- 		监控场景		 -->
+	<form class="form-horizontal">
+		% if scenario not in ['performance', 'base_alarm']:
+		<div class="form-group group-monitor-info">
+	        <label for="monitor_name" class="col-sm-2 control-label">监控名称<span class="required"></span></label>
+	        <div class="col-sm-4">
+	        	<input type="hidden" id="old_monitor_name" value="${monitor.monitor_name if monitor else ''}"/>
+	            <input type="text" class="form-control" id="monitor_name" value="${monitor.monitor_name if monitor else ''}" ${'disabled' if monitor and monitor.scenario not in ['performance', 'custom'] else ''} maxlength="20">
+	            <span class="help-block">监控名称, 长度小于20个字符。</span>
+	        </div>
+	        <span id="tip_monitor_name" class="tips error"></span>
+	    </div>
+	    % endif
+	    <div class="form-group group-trt group-src">
+			<!-- 		监控源						 -->
+			% if scenario in ['performance', 'base_alarm']:
+				<%include file="tags/data_table_s.part"/>
+			% else:
+				<%include file="tags/data_table.part"/>
+			% endif
+	    </div>
+	    <div class="form-group group-monitor-info">
+	        <label for="monitor_field" class="col-sm-2 control-label">监控指标<span class="required"></span></label>
+	        <div class="col-sm-4">
+	        	% if scenario == 'base_alarm':
+	        	<input type="text" class="form-control select2 not_empty_select not_edit" id="monitor_field" placeholder="请选择监控指标" value="${monitor.monitor_name}" 'disabled'>
+	        	% else:
+	            <input type="text" class="form-control select2 not_empty_select not_edit" id="monitor_field" placeholder="请选择监控指标" value="${monitor_field if monitor_field else ''}" ${'disabled' if scenario == 'performance' and hostindex_id or scenario == 'base_alarm' else ''}>
+	            % endif
+	        </div>
+	        % if scenario not in ['performance', 'base_alarm']:
+	    	<div class="inline-block" id="count_method_div">
+	            <select class="form-control select2 not_edit" id="count_method" style="width: 90px"> 
+	                <option value="sum"  ${'selected' if (monitor and monitor.count_method == 'sum') else ''}>SUM</option>
+	                <option value="count" ${'selected' if (monitor and monitor.count_method == 'count') else ''}>COUNT</option>
+	                <option value="max"  ${'selected' if (monitor and monitor.count_method == 'max') else ''}>MAX</option>
+	                <option value="min"  ${'selected' if (monitor and monitor.count_method == 'min') else ''}>MIN</option>
+	                <option value="avg"  ${'selected' if (monitor and monitor.count_method == 'avg') else ''}>AVG</option>
+	            </select>
+	        </div>
+	        % endif
+	        <span id="tip_monitor_field" class="tips error"></span>
+	    </div>
+	    % if scenario not in ['performance', 'base_alarm']:
+	        <div class="form-group group-monitor-info">
+	            <label for="dimension_field" class="col-sm-2 control-label">监控维度<span class="required"></span></label>
+	            <div class="col-sm-4">
+	                <div class="input-group ">
+	                    <div class="input-group-addon">GROUP BY</div>
+	                    <input type="text" style="height:auto;" class="form-control select2 not_edit" id="dimension_field" value="${dimension_field_value}" placeholder="请选择监控维度">
+	                </div>
+                </div>
+                 <div class="inline-block" id="count_method_div">
+                    <span class="data-tip" data-html="true" data-trigger="hover" data-placement="right" data-content="<span class='word-break'>select count(*) from 监控源 group by en_name, cn_name; 当选择多个维度时，监控维度即是<font color='red'>由多个维度的值的组合</font>。</span>"><i class="fa fa-question-circle"></i></span>
+                </div>
+	        </div>
+	        <div class="form-group group-monitor-info">
+	            <label for="count_freq" class="col-sm-2 control-label">监控周期<span class="required"></span></label>
+	            <div class="col-sm-4">
+	                <select class="form-control select2 not_empty_select not_edit" id="count_freq_group">
+	                    <option value="60" ${'selected' if (count_freq == '60') else ''}>1分钟</option>
+	                    <option value="300" ${'selected' if (count_freq == '300') else ''}>5分钟</option>
+	                </select>
+	            </div>
+	            <span id="tip_count_freq_group" class="tips error"></span>
+	        </div>
+	    % endif
+	    <form class="form-horizontal">
+	        <div class="form-group group-monitor-info">
+	            <label for="monitor_desc" class="col-sm-2 control-label">备注<span>&nbsp;</span></label>
+	            <div class="col-sm-4">
+	            	<textarea class="form-control" id="monitor_desc" rows="2">${monitor.monitor_desc if monitor else ''}</textarea>
+	            </div>
+	        </div>
+	    </form>
+	</form>
+</%block>
+<<%block name="strategy_config">
+	<%include file="strategy.part"/>
+</%block>
+<%block name="script_config">
+	<script>
+    var monitor_id = '${monitor_id}';
+	var scenario = "${scenario}"
+    $('.data-tip').popover();
+	var wait_data = [{"id":"", "text": "数据待加载"}];
+	$(function(){
+		get_result_table();
+
+		% if not monitor:
+			// 新建
+			$("select.select2").select2({dropdownAutoWidth:"true"});
+			$("input.select2").select2({data:wait_data, dropdownAutoWidth:"true"});
+##			if(scenario != "performance"){
+##				add_default_strategy(1, 99, "");
+##			}
+		% else:
+			// 编辑
+			$(".not_edit").attr('disabled', 'disabled');
+		% endif
+
+		if(scenario == 'performance'){
+			<%!
+			import json
+			%>
+			var host_list = ${json.dumps(host_list)};
+			$("input.select2").select2({data:wait_data, dropdownAutoWidth:"true"});
+			$("#monitor_field").select2({data:host_list, dropdownAutoWidth:"true"});
+			$("#monitor_field").on("change", function(){
+				var _sid = $("#monitor_field").select2("data").s_id
+				$("#s_id").val(_sid)
+				get_strategy('');
+			})
+		}
+	})
+	//参数验证
+	$("#monitor_name").on('blur', function(){
+		check_monitor_name();
+	});
+	$(".not_empty").on('blur', function(){
+		check_not_empty_element($(this))
+	});
+	$(".number_check").on('blur', function(){
+		check_number_element($(this));
+	});
+	$("#save_config").on("click", function(){
+	    if ($("#save_config").attr("disabled") == "disabled"){
+	        return;
+	    }
+	    $(this).attr("disabled", "disabled");
+	    
+	    % if monitor:
+	    save_monitor_config("update", "编辑配置");
+	    % elif scenario == 'performance':
+	    var monitor_id = $("#monitor_field").select2("data").monitor_id
+	    if(monitor_id == 0){
+	    	save_monitor_config("access_performance", "新建配置");
+	    } else {
+	    	save_monitor_config("update", "编辑配置");
+	    }
+	    % else:
+	    save_monitor_config("access_custom", "新建配置");
+	    % endif
+	})
+	// 获取筛选条件的filed
+##	function get_condition_fileds(){
+##	    // 初始化维度, 维度暂时不需要 timestamp
+##	    // var dimension_data = [{id: "timestamp", text: "timestamp"}];
+##	    var dimension_data = []
+##	    var dimension_fields = $(".iframe-div #dimension_field").val();
+##	    if(dimension_fields){
+##	    	dimension_fields = dimension_fields.split(",");
+##		    for (var i = 0; i < dimension_fields.length; i++){
+####		        console.log(dimension_fields);
+##		        dimension_data.push({id: dimension_fields[i], text: dimension_fields[i]});
+##		    }
+##	    }
+##	    return dimension_data;
+##	}
+	
+	/*
+	 * 自定义接入表单信息获取
+	 */
+	 function get_monitor_param(){
+	    var param = {};
+	    param.src_type = "JA";
+	    param.biz_id = cc_biz_id;
+	    param.s_id = $(".iframe-div #s_id").val();
+	    param.scenario = '${scenario}';
+	    % if monitor:
+	    param.monitor_id = '${monitor_id}';
+	    % endif
+	    param.monitor_desc = $("#monitor_desc").val();
+	    % if not monitor:
+	    if ($("#data_table").select2("data").type == "trt"){
+	        param.result_table_id = $("#data_table").val()
+	        param.access_type = "trt"
+	    } else {
+	        param.dataid = $("#data_table").val()
+	        param.dataset = $("#data_table").select2("data").dataset
+	        param.data_format_id = $("#data_table").select2("data").data_format
+	        param.access_type = "dataset"
+	    }
+	    % endif
+	    % if scenario == "performance":
+	    param.count_field = {"id": $("#monitor_field").val(), "name": $("#monitor_field").select2("data").item, "text": $("#monitor_field").select2("data").text}
+	    param.monitor_name = $("#monitor_field").select2("data").text
+	    param.monitor_id = $("#monitor_field").select2("data").monitor_id
+	    % elif scenario == "base_alarm":
+	    param.monitor_name = $("#monitor_field").val()
+	    % else:
+	    param.monitor_name = $("#monitor_name").val();
+	    param.count_field = {"name": $("#monitor_field").val(), "type": $("#monitor_field").select2("data").type, "desc": $("#monitor_field").select2("data").desc}
+	    % endif
+	    param.count_method = $("#count_method").val();
+	    param.count_freq = $("#count_freq_group").val();
+	    // 监控维度 非必填
+	    % if not monitor and scenario != "performance":
+	    var cur_dimension_fields = $("#dimension_field").select2("data");
+	    % else:
+	    var cur_dimension_fields = $("#dimension_field").val();
+	    % endif
+        param.dimension_fields = cur_dimension_fields ? cur_dimension_fields : [];
+	    return param
+	 }
+	</script>
+</%block>
