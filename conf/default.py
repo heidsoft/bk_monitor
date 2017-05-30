@@ -28,7 +28,7 @@ APP_TOKEN = 'a9931026-84cb-49cb-8bf7-47deba69d566'
 # ESB_APP_ID = 'alert'
 # ESB_APP_TOKEN = 'eaa68158-9c7c-4829-87c4-9d4c047a455e'
 # 蓝鲸智云开发者中心的域名，形如：http://paas.bkopen.com
-BK_PAAS_HOST = "http://paas.bking.com"
+BK_PAAS_HOST = "http://paas.bkopen.com"
 
 # 是否启用celery任务
 IS_USE_CELERY = False
