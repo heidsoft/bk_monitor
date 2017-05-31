@@ -12,7 +12,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'bk_monitor',
         'USER': 'root',
-        'PASSWORD': '123456',
+        'PASSWORD': 'oneoaas@A',
         'HOST': '10.0.2.47',
         'PORT': '3306',
     },
